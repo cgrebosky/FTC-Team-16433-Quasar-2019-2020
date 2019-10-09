@@ -1,0 +1,9 @@
+#Only our robotics code
+
+*
+!*/
+!TeamCode/src/main/java/quasar/**
+TeamCode/src/main/java/quasar/.DS_Store
+
+!.gitignore
+
