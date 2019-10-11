@@ -1,5 +1,9 @@
 package quasar.subsystems;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -15,11 +19,11 @@ public class Mecanum extends SubSystem {
     private double left, fwd, rot;
 
     //These are the coefficients for the motorpowers in order of fl, fr, bl, br (in order as defined above)
-    private final double[] FWD       = {1,1,1,1};
-    private final double[] STRAFE      = {1,-1,-1,1};
-    private final double[] TURN = {1,-1,1,-1};
+    private final double[] FWD    = {1,1,1,1};
+    private final double[] STRAFE = {1,-1,-1,1};
+    private final double[] TURN   = {1,-1,1,-1};
 
-    private       double[] powers    = {0, 0, 0,0};
+    private       double[] powers = {0, 0, 0,0};
 
     @Override
     public void init() {
@@ -41,7 +45,7 @@ public class Mecanum extends SubSystem {
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
+        opm.telemetry.addLine("Mecanum ready");
     }
 
     @Override
@@ -94,5 +98,40 @@ public class Mecanum extends SubSystem {
 
         powers = MoreMath.listMultiply(1/max, powers);
 
+    }
+
+    @TeleOp(name = "Mecanum Test", group = "Testing")
+    public class OpModeTest extends OpMode {
+
+        Mecanum m = new Mecanum();
+
+        @Override
+        public void init() {
+            m.create(this);
+            m.init();
+        }
+
+        @Override
+        public void loop() {
+            m.loop();
+
+            telemetry.update();
+        }
+    }
+
+    @Autonomous(name = "Mecanum Test", group = "Testing")
+    public class AutoTest extends LinearOpMode {
+
+        Mecanum m = new Mecanum();
+
+        @Override
+        public void runOpMode() throws InterruptedException {
+            m.create(this);
+            m.init();
+
+            waitForStart();
+
+
+        }
     }
 }
