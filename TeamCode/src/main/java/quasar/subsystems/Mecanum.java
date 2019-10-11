@@ -8,9 +8,9 @@ import quasar.lib.SubSystem;
 
 public class Mecanum extends SubSystem {
 
-    DcMotor fl, fr, bl, br;
+    private DcMotor fl, fr, bl, br;
 
-    private double THRESHOLD = 0.1;
+    private final double THRESHOLD = 0.1;
 
     private double left, fwd, rot;
 
@@ -18,8 +18,6 @@ public class Mecanum extends SubSystem {
     private final double[] FWD       = {1,1,1,1};
     private final double[] STRAFE      = {1,-1,-1,1};
     private final double[] TURN = {1,-1,1,-1};
-
-    double turnCorrection = 0.0;
 
     private       double[] powers    = {0, 0, 0,0};
 
@@ -49,9 +47,6 @@ public class Mecanum extends SubSystem {
     @Override
     public void loop() {
 
-        if(gamepad1.a) turnCorrection+=0.01;
-        if(gamepad1.b) turnCorrection-=0.01;
-
         zeroControls();
         calculatePowers();
         normalizeMotorPowers();
@@ -66,9 +61,6 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("Left", left);
         opm.telemetry.addData("Rotation", rot);
         opm.telemetry.addLine();
-        opm.telemetry.addData("Turn Correction", turnCorrection);
-
-
     }
 
 
@@ -77,10 +69,6 @@ public class Mecanum extends SubSystem {
         powers = MoreMath.listMultiply(fwd, FWD);
         powers = MoreMath.listAdd(powers, MoreMath.listMultiply(left, STRAFE));
         powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rot, TURN));
-
-        double[] corr = MoreMath.listMultiply(turnCorrection, MoreMath.listMultiply(gamepad1.left_stick_x, FWD));
-
-        powers = MoreMath.listAdd(powers, corr);
     }
     private void zeroControls() {
         left = gamepad1.left_stick_x;
