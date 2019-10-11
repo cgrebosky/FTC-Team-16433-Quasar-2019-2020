@@ -1,7 +1,7 @@
-package c4.lib.macro
+package quasar.lib.macro
 
-import c4.lib.macro.MacroState.Companion.filename
-import c4.lib.macro.MacroState.Companion.path
+import quasar.lib.macro.MacroState.Companion.filename
+import quasar.lib.macro.MacroState.Companion.path
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import java.io.File
@@ -16,7 +16,7 @@ class MacroRecorder: OpMode() {
 
     var recording = LinkedList<MacroState>()
 
-    private var state = State.UNINITIALIZED;
+    private var state = State.UNINITIALIZED
 
     override fun init() {
         //INIT CODE HERE

@@ -1,4 +1,4 @@
-package c4.lib.macro
+package quasar.lib.macro
 
 import android.os.Environment
 import java.io.Serializable
