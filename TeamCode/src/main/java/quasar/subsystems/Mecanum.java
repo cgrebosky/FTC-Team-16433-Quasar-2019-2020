@@ -32,8 +32,7 @@ public class Mecanum extends SubSystem {
         bl = hardwareMap.dcMotor.get("bl");
         br = hardwareMap.dcMotor.get("br");
 
-        bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        useCompBotConfig();
 
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -67,6 +66,14 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addLine();
     }
 
+    public void useTestBotConfig() {
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+    public void useCompBotConfig() {
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
 
     private void calculatePowers() {
         //Why tf doesn't java have list stuff automatically???  Why do I have to make this stuff manually?? >:(
@@ -98,40 +105,5 @@ public class Mecanum extends SubSystem {
 
         powers = MoreMath.listMultiply(1/max, powers);
 
-    }
-
-    @TeleOp(name = "Mecanum Test", group = "Testing")
-    public class OpModeTest extends OpMode {
-
-        Mecanum m = new Mecanum();
-
-        @Override
-        public void init() {
-            m.create(this);
-            m.init();
-        }
-
-        @Override
-        public void loop() {
-            m.loop();
-
-            telemetry.update();
-        }
-    }
-
-    @Autonomous(name = "Mecanum Test", group = "Testing")
-    public class AutoTest extends LinearOpMode {
-
-        Mecanum m = new Mecanum();
-
-        @Override
-        public void runOpMode() throws InterruptedException {
-            m.create(this);
-            m.init();
-
-            waitForStart();
-
-
-        }
     }
 }

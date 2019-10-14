@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-fileName=C4Properties.txt
+fileName=mecanumtestbot.xml
 
 #Various paths
 phonePath=/sdcard/FIRST
