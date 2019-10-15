@@ -14,6 +14,7 @@ public class MecanumCompBot extends OpMode {
     public void init() {
         m.create(this);
         m.init();
+        m.useCompBotConfig();
     }
 
     @Override
