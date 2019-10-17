@@ -1,7 +1,5 @@
 package quasar.lib;
 
-import quasar.lib.fileTools.Trace;
-
 public class MoreMath {
     //Represents scalar * vector multiplication
     public static double[] listMultiply(double a, double[] b) {
@@ -16,8 +14,8 @@ public class MoreMath {
     //Represents vector + vector addition
     public static double[] listAdd(double[] a, double[] b) {
         if(a.length != b.length) {
-            Trace.log("Misuse of listAdd with different lengths");
-            return null;
+            throw new IllegalArgumentException("Array lengths must be the same!  Currently a is "
+                    + a.length + " and b is " + b.length);
         }
 
         double[] prod = a.clone();

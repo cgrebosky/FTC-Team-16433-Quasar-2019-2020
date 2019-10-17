@@ -5,7 +5,6 @@ import android.os.Environment;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -22,7 +21,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import quasar.lib.GamepadState;
-import quasar.lib.fileTools.Trace;
 
 
 @TeleOp(name = "Motor Tester", group = "Testing")
@@ -109,7 +107,6 @@ public class MotorTester extends OpMode {
             DocumentBuilder db = dbf.newDocumentBuilder();
             doc = db.parse(FILE);
         } catch (IOException | SAXException | ParserConfigurationException e) {
-            Trace.log("Unable to open Config file");
             e.printStackTrace();
         }
     }
