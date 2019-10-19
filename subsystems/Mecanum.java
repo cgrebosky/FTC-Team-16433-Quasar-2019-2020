@@ -46,10 +46,10 @@ public class Mecanum extends SubSystem {
     }
 
     @Override
-    public void loop() {
+    @Tele public void loop() {
 
         zeroControls();
-        calculatePowers();
+        calculatePowers(fwd, left, rot);
         normalizeMotorPowers();
         setMotorPowers();
 
@@ -77,13 +77,13 @@ public class Mecanum extends SubSystem {
         br.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    private void calculatePowers() {
+    @Tele private void calculatePowers(double forward, double strafe, double rotation) {
         //Why tf doesn't java have list stuff automatically???  Why do I have to make this stuff manually?? >:(
-        powers = MoreMath.listMultiply(fwd, FWD);
-        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(left, STRAFE));
-        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rot, TURN));
+        powers = MoreMath.listMultiply(forward, FWD);
+        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(strafe, STRAFE));
+        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rotation, TURN));
     }
-    private void zeroControls() {
+    @Tele private void zeroControls() {
         left = gamepad1.left_stick_x;
         fwd = -gamepad1.left_stick_y;
         rot = gamepad1.right_stick_x;
@@ -106,6 +106,30 @@ public class Mecanum extends SubSystem {
         }
 
         powers = MoreMath.listMultiply(1/max, powers);
+
+    }
+
+    @Auto public void moveVector(double x, double y) {
+        calculatePowers(y, x, 0);
+        normalizeMotorPowers();
+        setMotorPowers();
+    }
+    @Auto public void moveAngle(double deg) {
+        double theta = Math.toDegrees(deg + (Math.PI / 2) );
+        double x = Math.cos(theta);
+        double y = Math.sin(theta);
+
+        moveVector(x, y);
+    }
+    @Auto public void turnDegrees(double deg) {
+        calculatePowers(0,0,Math.signum(deg));
+        setMotorPowers();
+
+        long endTime = System.currentTimeMillis() + 5000;
+        while(System.currentTimeMillis() < endTime);
+
+        calculatePowers(0d,0d,0d);
+        setMotorPowers();
 
     }
 }
