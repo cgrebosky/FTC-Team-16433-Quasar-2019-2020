@@ -132,4 +132,9 @@ public class Mecanum extends SubSystem {
         setMotorPowers();
 
     }
+
+    @Auto public void zeroMotors() {
+        powers = new double[] {0d,0d,0d,0d};
+        setMotorPowers();
+    }
 }
