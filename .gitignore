@@ -1,10 +1,7 @@
-#Only our robotics code
+*.DS_Store
 
-*
-!*/
-!TeamCode/src/main/java/quasar/**
-TeamCode/src/main/java/quasar/.DS_Store
+#local file is for code on your local machines - do whatever the hell you want with it, just don't
+#push it to our nonlocal repository
 
-!.gitignore
-!README.md
-
+local/*
+!local/.gitkeep

@@ -32,9 +32,6 @@ public class Mecanum extends SubSystem {
         bl = hardwareMap.dcMotor.get("bl");
         br = hardwareMap.dcMotor.get("br");
 
-        bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        fl.setDirection(DcMotorSimple.Direction.REVERSE);
-
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -49,10 +46,10 @@ public class Mecanum extends SubSystem {
     }
 
     @Override
-    public void loop() {
+    @Tele public void loop() {
 
         zeroControls();
-        calculatePowers();
+        calculatePowers(fwd, left, rot);
         normalizeMotorPowers();
         setMotorPowers();
 
@@ -67,14 +64,26 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addLine();
     }
 
-
-    private void calculatePowers() {
-        //Why tf doesn't java have list stuff automatically???  Why do I have to make this stuff manually?? >:(
-        powers = MoreMath.listMultiply(fwd, FWD);
-        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(left, STRAFE));
-        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rot, TURN));
+    public void useTestBotConfig() {
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        fr.setDirection(DcMotorSimple.Direction.FORWARD);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
     }
-    private void zeroControls() {
+    public void useCompBotConfig() {
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        fr.setDirection(DcMotorSimple.Direction.FORWARD);
+        bl.setDirection(DcMotorSimple.Direction.FORWARD);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    @Tele private void calculatePowers(double forward, double strafe, double rotation) {
+        //Why tf doesn't java have list stuff automatically???  Why do I have to make this stuff manually?? >:(
+        powers = MoreMath.listMultiply(forward, FWD);
+        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(strafe, STRAFE));
+        powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rotation, TURN));
+    }
+    @Tele private void zeroControls() {
         left = gamepad1.left_stick_x;
         fwd = -gamepad1.left_stick_y;
         rot = gamepad1.right_stick_x;
@@ -100,38 +109,32 @@ public class Mecanum extends SubSystem {
 
     }
 
-    @TeleOp(name = "Mecanum Test", group = "Testing")
-    public class OpModeTest extends OpMode {
+    @Auto public void moveVector(double x, double y) {
+        calculatePowers(y, x, 0);
+        normalizeMotorPowers();
+        setMotorPowers();
+    }
+    @Auto public void moveAngle(double deg) {
+        double theta = Math.toDegrees(deg + (Math.PI / 2) );
+        double x = Math.cos(theta);
+        double y = Math.sin(theta);
 
-        Mecanum m = new Mecanum();
+        moveVector(x, y);
+    }
+    @Auto public void turnDegrees(double deg) {
+        calculatePowers(0,0,Math.signum(deg));
+        setMotorPowers();
 
-        @Override
-        public void init() {
-            m.create(this);
-            m.init();
-        }
+        long endTime = System.currentTimeMillis() + 5000;
+        while(System.currentTimeMillis() < endTime);
 
-        @Override
-        public void loop() {
-            m.loop();
+        calculatePowers(0d,0d,0d);
+        setMotorPowers();
 
-            telemetry.update();
-        }
     }
 
-    @Autonomous(name = "Mecanum Test", group = "Testing")
-    public class AutoTest extends LinearOpMode {
-
-        Mecanum m = new Mecanum();
-
-        @Override
-        public void runOpMode() throws InterruptedException {
-            m.create(this);
-            m.init();
-
-            waitForStart();
-
-
-        }
+    @Auto public void zeroMotors() {
+        powers = new double[] {0d,0d,0d,0d};
+        setMotorPowers();
     }
 }
