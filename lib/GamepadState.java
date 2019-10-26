@@ -65,4 +65,23 @@ public class GamepadState {
 
     }
     public GamepadState() {}
+
+    public static boolean press(boolean current, boolean prev) {
+        return (current && !prev);
+    }
+    public static boolean release(boolean current, boolean prev) {
+        return (!current && prev);
+    }
+    /**
+     * Toggles a value; used like "prevState = toggle(a, prev.a, prevState)"  If prevState = 0, pressing
+     * a will make it 1, and vice versa.
+     * @param current The current value of whatever boolean button this is bound to
+     * @param prev The previous value of whatever boolean button this is bound to.  This enables press detection
+     * @param prevState The previous state of whatever variable we are toggling.
+     * @return The new value of that variable.  See use above.
+     */
+    public static boolean toggle(boolean current, boolean prev, boolean prevState) {
+        if(press(current, prev)) return !prevState;
+        return prevState;
+    }
 }
