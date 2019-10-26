@@ -25,8 +25,7 @@ public class Mecanum extends SubSystem {
 
     private       double[] powers = {0, 0, 0,0};
 
-    @Override
-    public void init() {
+    @Override public void init() {
         fl = hardwareMap.dcMotor.get("fl");
         fr = hardwareMap.dcMotor.get("fr");
         bl = hardwareMap.dcMotor.get("bl");
@@ -44,9 +43,7 @@ public class Mecanum extends SubSystem {
 
         opm.telemetry.addLine("Mecanum ready");
     }
-
-    @Override
-    @Tele public void loop() {
+    @Override @Tele public void loop() {
 
         zeroControls();
         calculatePowers(fwd, left, rot);
@@ -62,6 +59,9 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("Left", left);
         opm.telemetry.addData("Rotation", rot);
         opm.telemetry.addLine();
+    }
+    @Override public void stop() {
+        zeroMotors();
     }
 
     public void useTestBotConfig() {

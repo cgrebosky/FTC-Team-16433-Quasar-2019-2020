@@ -44,6 +44,8 @@ abstract public class SubSystem {
     @Auto public void autoInit() { init(); }
     @Tele public abstract void loop();
 
+    public abstract void stop();
+
     //endregion
     //region Annotations
     //Decorative annotations to mark purely autonomous or teleop methods
