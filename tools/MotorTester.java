@@ -23,7 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import quasar.lib.GamepadState;
 
 
-@TeleOp(name = "Motor Tester", group = "Testing")
+@TeleOp(name = "Motor Tester", group = "Tools")
 public class MotorTester extends OpMode {
 
     private static final String PATH = Environment.getExternalStorageDirectory().getPath() + "/FIRST/";

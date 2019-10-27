@@ -7,7 +7,7 @@ import quasar.lib.SubSystem;
 
 public class PlatformMover extends SubSystem {
 
-    private final double LEFT_DOWN = 0, LEFT_UP = 0, RIGHT_DOWN = 0, RIGHT_UP = 0;
+    private final double LEFT_DOWN = 0.8, LEFT_UP = 0.05, RIGHT_DOWN = 0.25, RIGHT_UP = 0.95;
 
     private Servo left, right;
 
@@ -23,7 +23,6 @@ public class PlatformMover extends SubSystem {
     public void loop() {
         armsDown = GamepadState.toggle(gamepad1.dpad_left, prev1.dpad_left, armsDown);
         updateArms();
-
 
         postLoop();
     }
