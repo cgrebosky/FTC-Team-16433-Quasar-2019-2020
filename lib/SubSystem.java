@@ -18,7 +18,7 @@ abstract public class SubSystem {
 
     //These are merely niceties, they can easily be accessed through opm.
     protected Gamepad gamepad1, gamepad2;
-    protected GamepadState prev1, prev2;
+    protected GamepadState prev1 = new GamepadState(), prev2 = new GamepadState();
 
     protected HardwareMap hardwareMap;
 
