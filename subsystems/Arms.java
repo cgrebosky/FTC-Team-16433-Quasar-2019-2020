@@ -13,7 +13,10 @@ public class Arms extends SubSystem {
 
     Servo claw, hinge;
 
-    private final double CLOSED = 1, OPEN = 0.8;
+    private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.8;
+    private final int ARM_IN = 0, ARM_OUT = 250;
+    private final double HINGE_IN = 0, HINGE_OUT = 0.8;
+
     private boolean clawClosed = false;
     private double targetPos = 0;
 
@@ -48,11 +51,13 @@ public class Arms extends SubSystem {
         left.setPower(0);
         right.setPower(0);
     }
+
     @Override
     protected void telemetry() {
-        opm.telemetry.addData("Power", left.getPower());
-        opm.telemetry.addData("LPosition", left.getCurrentPosition());
-        opm.telemetry.addData("Targe Pot", targetPos);
+        opm.telemetry.addLine("ARMS");
+        opm.telemetry.addData("    Power", left.getPower());
+        opm.telemetry.addData("    LPosition", left.getCurrentPosition());
+        opm.telemetry.addData("    Targe Pot", targetPos);
     }
 
     private void moveArms() {
@@ -73,9 +78,10 @@ public class Arms extends SubSystem {
 
         return pwr;
     }
+
     private void toggleClaw() {
         clawClosed = GamepadState.toggle(gamepad1.a, prev1.a, clawClosed);
-        if(clawClosed) claw.setPosition(CLOSED);
-        else claw.setPosition(OPEN);
+        if(clawClosed) claw.setPosition(CLAW_CLOSED);
+        else claw.setPosition(CLAW_OPEN);
     }
 }

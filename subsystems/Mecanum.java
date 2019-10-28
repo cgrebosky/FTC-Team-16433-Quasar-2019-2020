@@ -56,15 +56,15 @@ public class Mecanum extends SubSystem {
         zeroMotors();
     }
     @Override protected void telemetry() {
-        opm.telemetry.addData("FL", powers[0]);
-        opm.telemetry.addData("FR", powers[1]);
-        opm.telemetry.addData("BL", powers[2]);
-        opm.telemetry.addData("BR", powers[3]);
+        opm.telemetry.addLine("MECANUM");
+        opm.telemetry.addData("    FL", powers[0]);
+        opm.telemetry.addData("    FR", powers[1]);
+        opm.telemetry.addData("    BL", powers[2]);
+        opm.telemetry.addData("    BR", powers[3]);
         opm.telemetry.addLine();
-        opm.telemetry.addData("Forward", fwd);
-        opm.telemetry.addData("Left", left);
-        opm.telemetry.addData("Rotation", rot);
-        opm.telemetry.addLine();
+        opm.telemetry.addData("    Forward", fwd);
+        opm.telemetry.addData("    Left", left);
+        opm.telemetry.addData("    Rotation", rot);
     }
 
     public void useTestBotConfig() {

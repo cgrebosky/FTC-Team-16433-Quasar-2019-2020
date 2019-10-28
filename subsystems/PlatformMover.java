@@ -31,7 +31,8 @@ public class PlatformMover extends SubSystem {
     }
     @Override
     protected void telemetry() {
-        opm.telemetry.addLine("Platform hooks are currently " + (armsDown?"DOWN":"UP") );
+        opm.telemetry.addLine("PLATFORM MOVER");
+        opm.telemetry.addLine("    Platform hooks are currently " + (armsDown?"DOWN":"UP") );
     }
 
     private void updateArms() {
