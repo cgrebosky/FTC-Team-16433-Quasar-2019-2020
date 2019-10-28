@@ -9,9 +9,9 @@ import quasar.lib.SubSystem;
 
 public class Arms extends SubSystem {
 
-    DcMotor left, right;
+    private DcMotor left, right;
 
-    Servo claw, hinge;
+    private Servo claw, hinge;
 
     private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.8;
     private final int ARM_IN = 0, ARM_OUT = 250;

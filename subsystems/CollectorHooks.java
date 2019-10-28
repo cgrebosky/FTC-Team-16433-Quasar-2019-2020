@@ -7,7 +7,7 @@ import quasar.lib.SubSystem;
 
 public class CollectorHooks extends SubSystem {
 
-    Servo left, right;
+    private Servo left, right;
 
     private final double LEFT_CLOSED = 0, LEFT_OUT = 0, RIGHT_CLOSED = 0, RIGHT_OUT = 0;
 
