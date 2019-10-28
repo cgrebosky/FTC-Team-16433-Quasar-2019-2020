@@ -50,6 +50,12 @@ public class Mecanum extends SubSystem {
         normalizeMotorPowers();
         setMotorPowers();
 
+        postLoop();
+    }
+    @Override public void stop() {
+        zeroMotors();
+    }
+    @Override protected void telemetry() {
         opm.telemetry.addData("FL", powers[0]);
         opm.telemetry.addData("FR", powers[1]);
         opm.telemetry.addData("BL", powers[2]);
@@ -59,9 +65,6 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("Left", left);
         opm.telemetry.addData("Rotation", rot);
         opm.telemetry.addLine();
-    }
-    @Override public void stop() {
-        zeroMotors();
     }
 
     public void useTestBotConfig() {
