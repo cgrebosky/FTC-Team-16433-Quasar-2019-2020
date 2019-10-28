@@ -24,4 +24,15 @@ public class MoreMath {
         }
         return prod;
     }
+
+    /**
+     * Linear interpolation
+     * @param a Point 1
+     * @param b Point 2
+     * @param alpha Range [0,1], how far between each point should be
+     * @return the result of linear interpolation
+     */
+    public static double lerp(double a, double b, double alpha) {
+        return a + alpha * (b - a);
+    }
 }
