@@ -43,6 +43,7 @@ public class Arms extends SubSystem {
     public void loop() {
         moveArms();
         toggleClaw();
+        orientClaw();
 
         postLoop();
     }
@@ -56,8 +57,9 @@ public class Arms extends SubSystem {
     protected void telemetry() {
         opm.telemetry.addLine("ARMS");
         opm.telemetry.addData("    Power", left.getPower());
-        opm.telemetry.addData("    LPosition", left.getCurrentPosition());
-        opm.telemetry.addData("    Targe Pot", targetPos);
+        opm.telemetry.addData("    Arm Position", getArmPos());
+        opm.telemetry.addData("    Target Position", targetPos);
+        opm.telemetry.addData("    Claw Position", claw.getPosition());
     }
 
     private void moveArms() {
@@ -77,6 +79,17 @@ public class Arms extends SubSystem {
         if(Math.abs(pwr) > 1) pwr = Math.signum(pwr);
 
         return pwr;
+    }
+    private double getArmPos() {
+        return (double) ( right.getCurrentPosition() + left.getCurrentPosition() ) / 2;
+    }
+
+    private void orientClaw() {
+        //This is calculated with some really basic trig / geometry, just draw a diagram & it should make sense
+        double unitArmAngle = ( (double) left.getCurrentPosition() ) / ARM_OUT;
+        double s = HINGE_OUT * (1 - unitArmAngle);
+
+        claw.setPosition(s);
     }
 
     private void toggleClaw() {
