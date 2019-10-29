@@ -14,7 +14,7 @@ public class Arms extends SubSystem {
     private Servo claw, hinge;
 
     private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.8;
-    private final int ARM_IN = 0, ARM_OUT = 250;
+    private final int ARM_IN = 0, ARM_OUT = 830;
     private final double HINGE_IN = 0, HINGE_OUT = 0.8;
 
     private boolean clawClosed = false;
