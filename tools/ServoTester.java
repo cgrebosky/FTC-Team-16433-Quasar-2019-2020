@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "Servo Tool", group = "Tools")
 public class ServoTester extends OpMode {
 
-    Servo servo;
+    private Servo servo;
 
     @Override
     public void init() {
