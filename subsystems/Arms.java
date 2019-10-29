@@ -13,12 +13,12 @@ public class Arms extends SubSystem {
 
     private Servo claw, hinge;
 
-    private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.8;
-    private final int ARM_IN = 0, ARM_OUT = 830;
+    private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.3;
+    private final int ARM_IN = 0, ARM_1 = 550, ARM_2 = 700, ARM_3 = 800;
     private final double HINGE_IN = 0, HINGE_OUT = 0.8;
 
     private boolean clawClosed = false;
-    private double targetPos = 0;
+    private int targetPos = 0;
 
     @Override
     public void init() {
@@ -28,16 +28,17 @@ public class Arms extends SubSystem {
         claw = hardwareMap.servo.get("claw");
         hinge = hardwareMap.servo.get("clawHinge");
 
-        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        left.setDirection(DcMotorSimple.Direction.REVERSE);
+        right.setDirection(DcMotorSimple.Direction.FORWARD);
 
         left.setTargetPosition(0);
-
         left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
+        right.setTargetPosition(0);
+        right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     @Override
     public void loop() {
@@ -60,41 +61,60 @@ public class Arms extends SubSystem {
         opm.telemetry.addData("    Arm Position", getArmPos());
         opm.telemetry.addData("    Target Position", targetPos);
         opm.telemetry.addData("    Claw Position", claw.getPosition());
+        opm.telemetry.addData("    Hinge position", hinge.getPosition());
+        opm.telemetry.addData("    Claw is currently", clawClosed?"CLOSED":"OPEN");
     }
 
     private void moveArms() {
-        targetPos += gamepad1.left_trigger;
-        targetPos -= gamepad1.right_trigger;
+        setTargetPos();
+        left.setTargetPosition(targetPos);
+        right.setTargetPosition(targetPos);
 
-        left.setTargetPosition((int) targetPos);
-        left.setPower(getPower());
-        right.setPower(getPower());
-    }
-    private double getPower() {
-        double dist = left.getTargetPosition() - left.getCurrentPosition();
-        double pwr = dist / 50;
+        setArmPowers();
 
-        if(Math.abs(pwr) < 0.35) pwr = Math.signum(pwr) * 0.35;
-
-        if(Math.abs(pwr) > 1) pwr = Math.signum(pwr);
-
-        return pwr;
     }
     private double getArmPos() {
         return (double) ( right.getCurrentPosition() + left.getCurrentPosition() ) / 2;
     }
+    private void setTargetPos() {
+        if(gamepad1.a) targetPos = ARM_IN;
+        else if(gamepad1.b) targetPos = ARM_1;
+        else if(gamepad1.x) targetPos = ARM_2;
+        else if(gamepad1.y) targetPos = ARM_3;
+
+
+    }
+
+    private void setArmPowers() {
+        if(targetPos == ARM_IN && isNear(left.getCurrentPosition(), ARM_IN, 10)) {
+            left.setPower(0);
+            right.setPower(0);
+        } else if(targetPos == ARM_1 && isNear(left.getCurrentPosition(), ARM_1, 10)) {
+            left.setPower(0);
+            right.setPower(0);
+        } else if(targetPos == ARM_2 && isNear(left.getCurrentPosition(), ARM_2, 10)) {
+            left.setPower(0);
+            right.setPower(0);
+        } else {
+            left.setPower(0.2);
+            right.setPower(0.2);
+        }
+    }
 
     private void orientClaw() {
         //This is calculated with some really basic trig / geometry, just draw a diagram & it should make sense
-        double unitArmAngle = ( (double) left.getCurrentPosition() ) / ARM_OUT;
-        double s = HINGE_OUT * (1 - unitArmAngle);
+        double unitArmAngle = ( (double) left.getCurrentPosition() ) / ARM_3;
+        double s = HINGE_OUT * (unitArmAngle);
 
-        claw.setPosition(s);
+        hinge.setPosition(s);
     }
-
     private void toggleClaw() {
-        clawClosed = GamepadState.toggle(gamepad1.a, prev1.a, clawClosed);
+        clawClosed = GamepadState.toggle(gamepad1.left_bumper, prev1.left_bumper, clawClosed);
         if(clawClosed) claw.setPosition(CLAW_CLOSED);
         else claw.setPosition(CLAW_OPEN);
+    }
+
+    private boolean isNear(int val, int targetVal, int err) {
+        return (val < targetVal + err && val > targetVal - err);
     }
 }

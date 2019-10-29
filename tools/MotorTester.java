@@ -8,22 +8,30 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 @TeleOp(name = "Motor Tester", group = "Tools")
 public class MotorTester extends OpMode {
 
-    private DcMotor motor;
+    private DcMotor motor, rightArm;
 
     private double position; //[0,250]
 
     @Override
     public void init() {
         motor = hardwareMap.dcMotor.get("motor");
+        rightArm = hardwareMap.dcMotor.get("rightArm");
 
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        rightArm.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightArm.setTargetPosition(0);
+        rightArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     @Override
     public void loop() {
         motor.setTargetPosition((int) position);
-        motor.setPower(0.7);
+        motor.setPower(1);
+        rightArm.setTargetPosition(motor.getTargetPosition());
+        rightArm.setPower(1);
 
         telemetry.addData("Position", motor.getCurrentPosition());
         telemetry.addData("Direction", motor.getDirection());
@@ -34,8 +42,12 @@ public class MotorTester extends OpMode {
         telemetry.addData("Zero Power Behaviour", motor.getZeroPowerBehavior());
         telemetry.update();
 
-        position += gamepad1.left_trigger;
-        position -= gamepad1.right_trigger;
+        position += 3 * gamepad1.left_trigger;
+        position -= 3 * gamepad1.right_trigger;
+        if(gamepad1.a) position = -550;
+        if(gamepad1.b) position = -700;
+        if(gamepad1.x) position = -800;
+        if(gamepad1.y) position = -100;
     }
     @Override
     public void stop() {
