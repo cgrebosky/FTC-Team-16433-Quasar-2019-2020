@@ -8,7 +8,7 @@ import quasar.lib.SubSystem;
 
 public class Mecanum extends SubSystem {
 
-    private DcMotor fl, fr, bl, br;
+    public DcMotor fl, fr, bl, br;
 
     private final double THRESHOLD = 0.1;
 
@@ -83,14 +83,18 @@ public class Mecanum extends SubSystem {
         powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rotation, TURN));
     }
     @Tele private void zeroControls() {
-        left = gamepad1.left_stick_x;
-        fwd = -gamepad1.left_stick_y;
-        rot = gamepad1.right_stick_x;
+        left = scaleControls(gamepad1.left_stick_x);
+        fwd = -scaleControls(gamepad1.left_stick_y);
+        rot = scaleControls(gamepad1.right_stick_x);
 
         left = (Math.abs(left)<THRESHOLD)?0:left;
         fwd = (Math.abs(fwd)<THRESHOLD)?0:fwd;
         rot = (Math.abs(rot)<THRESHOLD)?0:rot;
     }
+    @Tele private double scaleControls(double x) {
+        return Math.signum(x) * Math.pow(x, 2);
+    }
+
     private void setMotorPowers() {
         fl.setPower(powers[0]);
         fr.setPower(powers[1]);
@@ -136,4 +140,6 @@ public class Mecanum extends SubSystem {
         powers = new double[] {0d,0d,0d,0d};
         setMotorPowers();
     }
+
+
 }

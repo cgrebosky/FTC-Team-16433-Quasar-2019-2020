@@ -13,9 +13,8 @@ public class Arms extends SubSystem {
 
     private Servo claw, hinge;
 
-    private final double CLAW_CLOSED = 1, CLAW_OPEN = 0.3;
+    private final double CLAW_CLOSED = 1, CLAW_OPEN = 0;
     private final int ARM_IN = 0, ARM_1 = 550, ARM_2 = 700, ARM_3 = 800;
-    private final double HINGE_IN = 0, HINGE_OUT = 0.8;
 
     private boolean clawClosed = false;
     private int targetPos = 0;
@@ -71,7 +70,6 @@ public class Arms extends SubSystem {
         right.setTargetPosition(targetPos);
 
         setArmPowers();
-
     }
     private double getArmPos() {
         return (double) ( right.getCurrentPosition() + left.getCurrentPosition() ) / 2;
@@ -81,8 +79,6 @@ public class Arms extends SubSystem {
         else if(gamepad1.b) targetPos = ARM_1;
         else if(gamepad1.x) targetPos = ARM_2;
         else if(gamepad1.y) targetPos = ARM_3;
-
-
     }
 
     private void setArmPowers() {
@@ -102,11 +98,8 @@ public class Arms extends SubSystem {
     }
 
     private void orientClaw() {
-        //This is calculated with some really basic trig / geometry, just draw a diagram & it should make sense
-        double unitArmAngle = ( (double) left.getCurrentPosition() ) / ARM_3;
-        double s = HINGE_OUT * (unitArmAngle);
-
-        hinge.setPosition(s);
+        double clawPos = (gamepad1.left_trigger + gamepad1.right_trigger) / 2;
+        hinge.setPosition(clawPos);
     }
     private void toggleClaw() {
         clawClosed = GamepadState.toggle(gamepad1.left_bumper, prev1.left_bumper, clawClosed);

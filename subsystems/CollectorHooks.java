@@ -9,9 +9,9 @@ public class CollectorHooks extends SubSystem {
 
     private Servo left, right;
 
-    private final double LEFT_CLOSED = 0, LEFT_OUT = 0, RIGHT_CLOSED = 0, RIGHT_OUT = 0;
+    private final double LEFT_CLOSED = 0.17, LEFT_OUT = 0.5, RIGHT_CLOSED = 0.43, RIGHT_OUT = 0.2;
 
-    private boolean hooksOpen = true;
+    private boolean hooksClosed = true;
 
     @Override
     public void init() {
@@ -33,18 +33,17 @@ public class CollectorHooks extends SubSystem {
     @Override
     protected void telemetry() {
         opm.telemetry.addLine("Collector");
-        opm.telemetry.addData("    Collector hooks are ", hooksOpen?"OPEN":"CLOSED");
-
+        opm.telemetry.addData("    Collector hooks are ", hooksClosed?"CLOSED":"OPEN");
     }
 
     private void toggleHooks() {
-        hooksOpen = GamepadState.toggle(gamepad1.dpad_right, prev1.dpad_left, hooksOpen);
-        if(hooksOpen) {
-            left.setPosition(LEFT_OUT);
-            right.setPosition(RIGHT_OUT);
-        } else {
+        hooksClosed = gamepad1.dpad_left;
+        if(hooksClosed) {
             left.setPosition(LEFT_CLOSED);
             right.setPosition(RIGHT_CLOSED);
+        } else {
+            left.setPosition(LEFT_OUT);
+            right.setPosition(RIGHT_OUT);
         }
     }
 }
