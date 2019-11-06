@@ -11,7 +11,7 @@ import java.io.FileInputStream
 import java.io.ObjectInputStream
 import java.util.*
 
-@Autonomous(name = "Macro Player")
+@Autonomous(name = "Macro Player Q")
 class MacroPlayer: LinearOpMode() {
 
     lateinit var recording: LinkedList<MacroState>
@@ -54,6 +54,7 @@ class MacroPlayer: LinearOpMode() {
         pf.init()
         md.create(this)
         md.init()
+        md.useCompBotConfig()
 
         telePrint("Loading data")
         readData()

@@ -11,7 +11,7 @@ import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 import java.util.*
 
-@TeleOp(name = "Macro Recorder")
+@TeleOp(name = "Macro Recorder Q")
 class MacroRecorder: OpMode() {
 
     private enum class State {UNINITIALIZED, RUNNING, STOPPED}
@@ -27,6 +27,7 @@ class MacroRecorder: OpMode() {
         //INIT CODE HERE
         m.create(this)
         m.init()
+        m.useCompBotConfig()
         pf.create(this)
         pf.init()
 
