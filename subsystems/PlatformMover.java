@@ -13,27 +13,25 @@ public class PlatformMover extends SubSystem {
 
     private boolean armsDown = false;
 
-    @Override
-    public void init() {
+    //region Subsystem Overrides
+    @Override public void init() {
         left = hardwareMap.servo.get("platformLeft");
         right = hardwareMap.servo.get("platformRight");
     }
-    @Override
-    public void loop() {
+    @Override public void loop() {
         toggleHooks();
 
         postLoop();
     }
-    @Override
-    public void stop() {
+    @Override public void stop() {
         liftHooks();
     }
-    @Override
-    protected void telemetry() {
+    @Override protected void telemetry() {
         opm.telemetry.addLine("PLATFORM MOVER");
         opm.telemetry.addLine("    Platform hooks are currently " + (armsDown?"DOWN":"UP") );
     }
-
+    //endregion
+    //region platformMover
     private void toggleHooks() {
         armsDown = GamepadState.toggle(gamepad1.dpad_right, prev1.dpad_right, armsDown);
 
@@ -48,4 +46,5 @@ public class PlatformMover extends SubSystem {
         left.setPosition(LEFT_DOWN);
         right.setPosition(RIGHT_DOWN);
     }
+    //endregion
 }

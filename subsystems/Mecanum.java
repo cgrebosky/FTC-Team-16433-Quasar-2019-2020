@@ -21,6 +21,7 @@ public class Mecanum extends SubSystem {
 
     private       double[] powers = {0, 0, 0,0};
 
+    //region SubSystem
     @Override public void init() {
         fl = hardwareMap.dcMotor.get("fl");
         fr = hardwareMap.dcMotor.get("fr");
@@ -62,7 +63,8 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("    Left", left);
         opm.telemetry.addData("    Rotation", rot);
     }
-
+    //endregion SubSystem
+    //region Mecanum
     public void useTestBotConfig() {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -140,6 +142,6 @@ public class Mecanum extends SubSystem {
         powers = new double[] {0d,0d,0d,0d};
         setMotorPowers();
     }
-
+    //endregion Mecanum
 
 }

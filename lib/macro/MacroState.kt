@@ -10,10 +10,23 @@ import java.io.Serializable
  */
 data class MacroState(var time: Long): Serializable {
 
-    //PUT MACRO STATE DATA HERE
+    //region PUT MACRO STATE DATA HERE
+    //Mecanum
+    var flPow = 0.0
+    var frPow = 0.0
+    var blPow = 0.0
+    var brPow = 0.0
+    //PlatformMover
+    var pfLeftPos = 0.0
+    var pfRightPos = 0.0
+    //endregion
 
     companion object {
-        val filename = "MacroRecording.txt"
+        val potentialFileNames = arrayOf("MacroRecording.txt",
+                "PlatformMoverAuto.txt",
+                "BlockMoveAuto.txt"
+        )
+        var filename = "MacroRecording.txt"
         val path = "/${Environment.getExternalStorageDirectory().path}/FIRST/"
     }
 }
