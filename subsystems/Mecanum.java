@@ -74,8 +74,8 @@ public class Mecanum extends SubSystem {
     public void useCompBotConfig() {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
-        bl.setDirection(DcMotorSimple.Direction.FORWARD);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     @Tele private void calculatePowers(double forward, double strafe, double rotation) {
