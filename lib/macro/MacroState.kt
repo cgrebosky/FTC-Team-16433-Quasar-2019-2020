@@ -19,14 +19,20 @@ data class MacroState(var time: Long): Serializable {
     //PlatformMover
     var pfLeftPos = 0.0
     var pfRightPos = 0.0
+    //Collector
+    var colLeftPow = 0.0
+    var colRightPow = 0.0
     //endregion
 
     companion object {
-        val potentialFileNames = arrayOf("MacroRecording.txt",
-                "PlatformMoverAuto.txt",
-                "BlockMoveAuto.txt"
+        val potentialFileNames = arrayOf("MacroRecording (DEBUG - DO NOT USE)",
+                "RED Platform Mover",
+                "BLUE Platform Mover",
+                "RED Block Mover",
+                "BLUE Block Mover"
+
         )
-        var filename = "MacroRecording.txt"
-        val path = "/${Environment.getExternalStorageDirectory().path}/FIRST/"
+        var filename = "MacroRecording"
+        val path = "/${Environment.getExternalStorageDirectory().path}/FIRST/macro/"
     }
 }

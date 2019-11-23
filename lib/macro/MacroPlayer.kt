@@ -4,6 +4,9 @@ import quasar.lib.macro.MacroState.Companion.filename
 import quasar.lib.macro.MacroState.Companion.path
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import quasar.lib.GamepadState
+import quasar.lib.MoreMath
+import quasar.subsystems.Collector
 import quasar.subsystems.Mecanum
 import quasar.subsystems.PlatformMover
 import java.io.File
@@ -19,6 +22,7 @@ class MacroPlayer: LinearOpMode() {
     //region variables
     val me = Mecanum()
     val pf = PlatformMover()
+    val co = Collector()
     //endregion
 
     override fun runOpMode() {
@@ -50,6 +54,28 @@ class MacroPlayer: LinearOpMode() {
         telemetry.update()
     }
     fun initialize() {
+
+        var prevUp = gamepad1.dpad_up
+        var prevDown = gamepad1.dpad_down
+        val len = MacroState.potentialFileNames.size
+        var index = 0
+        var currentOption = MacroState.potentialFileNames[index]
+        while(!gamepad1.a) {
+
+            if(GamepadState.press(gamepad1.dpad_up, prevUp)) index = MoreMath.tapeInc(0, len-1, index)
+            if(GamepadState.press(gamepad1.dpad_down, prevDown)) index = MoreMath.tapeDec(0,len-1,index)
+
+            prevUp = gamepad1.dpad_up
+            prevDown = gamepad1.dpad_down
+
+            currentOption = MacroState.potentialFileNames[index]
+            telemetry.addLine("Current file: $currentOption")
+            telemetry.addLine("Press DPAD_UP or DPAD_DOWN to change file")
+            telemetry.addLine("Index: $index")
+            telemetry.update()
+        }
+        filename = currentOption
+
         telePrint("Initializing robot")
 
         //region INITIALIZE ROBOT
@@ -59,6 +85,9 @@ class MacroPlayer: LinearOpMode() {
 
         pf.create(this)
         pf.init()
+
+        co.create(this)
+        co.init()
         //endregion
 
         telePrint("Loading data")
@@ -76,6 +105,9 @@ class MacroPlayer: LinearOpMode() {
 
         pf.left.position  = m.pfLeftPos
         pf.right.position = m.pfRightPos
+
+        co.left.power = m.colLeftPow;
+        co.right.power = m.colRightPow;
         //endregion
     }
 }

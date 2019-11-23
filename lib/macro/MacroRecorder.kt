@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
+import quasar.subsystems.Collector
 import quasar.subsystems.Mecanum
 import quasar.subsystems.PlatformMover
 import java.io.File
@@ -24,6 +25,7 @@ class MacroRecorder: OpMode() {
 
     private val me = Mecanum()
     private val pf = PlatformMover()
+    private val co = Collector()
 
     init {
         msStuckDetectInit = 50000
@@ -37,6 +39,9 @@ class MacroRecorder: OpMode() {
 
         pf.create(this)
         pf.init()
+
+        co.create(this)
+        co.init()
         //endregion
 
         var prevUp = gamepad1.dpad_up
@@ -67,6 +72,7 @@ class MacroRecorder: OpMode() {
         //region LOOP CODE HERE
         me.loop()
         pf.loop()
+        co.loop()
         //endregion
 
         if(state == State.UNINITIALIZED && gamepad1.a) state = State.RUNNING
@@ -84,6 +90,7 @@ class MacroRecorder: OpMode() {
     override fun stop() {
         me.stop()
         pf.stop()
+        co.stop()
     }
     fun serializeData() {
         //"reindex" the data so that time starts at 0.  This just makes it easier to deal with.
@@ -114,6 +121,9 @@ class MacroRecorder: OpMode() {
         m.frPow = me.fr.power
         m.blPow = me.bl.power
         m.brPow = me.br.power
+
+        m.colLeftPow = co.left.power;
+        m.colRightPow = co.right.power;
         //endregion
 
         return m
