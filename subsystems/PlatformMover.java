@@ -7,7 +7,7 @@ import quasar.lib.SubSystem;
 
 public class PlatformMover extends SubSystem {
 
-    private final double LEFT_DOWN = 0.8, LEFT_UP = 0.05, RIGHT_DOWN = 0.25, RIGHT_UP = 0.95;
+    private final double LEFT_DOWN = 0.85, LEFT_UP = 0.1, RIGHT_DOWN = 0.0, RIGHT_UP = 0.75;
 
     public Servo left, right;
 
@@ -17,6 +17,9 @@ public class PlatformMover extends SubSystem {
     @Override public void init() {
         left = hardwareMap.servo.get("platformLeft");
         right = hardwareMap.servo.get("platformRight");
+
+        left.setPosition(LEFT_UP);
+        right.setPosition(RIGHT_UP);
     }
     @Override public void loop() {
         toggleHooks();

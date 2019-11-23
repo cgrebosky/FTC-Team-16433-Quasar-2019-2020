@@ -7,7 +7,7 @@ import quasar.lib.SubSystem;
 
 public class Collector extends SubSystem {
 
-    private DcMotor left, right;
+    public DcMotor left, right;
 
     @Override
     public void init() {
