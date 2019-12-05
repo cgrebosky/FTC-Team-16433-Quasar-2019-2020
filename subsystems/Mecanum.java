@@ -1,13 +1,17 @@
 package quasar.subsystems;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.MoreMath;
 import quasar.lib.SubSystem;
 
+import static java.lang.Thread.sleep;
+
 public class Mecanum extends SubSystem {
 
+    //region Tele Variables
     public DcMotor fl, fr, bl, br;
 
     private final double THRESHOLD = 0.1;
@@ -20,6 +24,10 @@ public class Mecanum extends SubSystem {
     private final double[] TURN   = {1,-1,1,-1};
 
     private       double[] powers = {0, 0, 0,0};
+    //endregion
+    //region Auto Variables
+    BNO055IMU imu;
+    //endregion
 
     //region SubSystem
     @Override public void init() {
@@ -37,6 +45,20 @@ public class Mecanum extends SubSystem {
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
 
         opm.telemetry.addLine("Mecanum ready");
     }
@@ -62,6 +84,10 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("    Forward", fwd);
         opm.telemetry.addData("    Left", left);
         opm.telemetry.addData("    Rotation", rot);
+        opm.telemetry.addLine();
+        opm.telemetry.addData("    X (Active)", imu.getAngularOrientation().firstAngle);
+        opm.telemetry.addData("    Y", imu.getAngularOrientation().secondAngle);
+        opm.telemetry.addData("    Z", imu.getAngularOrientation().thirdAngle);
     }
     //endregion SubSystem
     //region Mecanum
@@ -69,7 +95,9 @@ public class Mecanum extends SubSystem {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     public void useCompBotConfig() {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -119,6 +147,19 @@ public class Mecanum extends SubSystem {
         normalizeMotorPowers();
         setMotorPowers();
     }
+    @Auto public void moveVectorTime(double x, double y, long timeMS) {
+        long endTime = System.currentTimeMillis() + timeMS;
+
+        try {
+            moveVector(x, y);
+            sleep(timeMS - 300);
+            moveVector(x / 2, y / 2);
+            sleep(300);
+        } catch (InterruptedException e) {
+            zeroMotors();
+        }
+        zeroMotors();
+    }
     @Auto public void moveAngle(double deg) {
         double theta = Math.toDegrees(deg + (Math.PI / 2) );
         double x = Math.cos(theta);
@@ -127,11 +168,28 @@ public class Mecanum extends SubSystem {
         moveVector(x, y);
     }
     @Auto public void turnDegrees(double deg) {
-        calculatePowers(0,0,Math.signum(deg));
+        calculatePowers(0,0,-Math.signum(deg) * 0.5);
         setMotorPowers();
 
-        long endTime = System.currentTimeMillis() + 5000;
-        while(System.currentTimeMillis() < endTime);
+        double start = imu.getAngularOrientation().firstAngle;
+        double end = deg + start;
+        double curr = start;
+        double diff = end - curr;
+        while(Math.abs(diff) > 5 && lop.opModeIsActive()) {
+            curr = imu.getAngularOrientation().firstAngle;
+            diff = end - curr;
+
+            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg));
+            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.5);
+            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.25);
+            setMotorPowers();
+
+            opm.telemetry.addData("start", start);
+            opm.telemetry.addData("end", end);
+            opm.telemetry.addData("curr", curr);
+            opm.telemetry.addData("diff", diff);
+            opm.telemetry.update();
+        }
 
         calculatePowers(0d,0d,0d);
         setMotorPowers();
