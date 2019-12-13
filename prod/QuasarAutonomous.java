@@ -55,12 +55,26 @@ public class QuasarAutonomous extends LinearOpMode {
         c.zeroMotors();
         m.turnDegrees(180);
 
-        moveForwardFastUntilClose();
+        m.moveVectorTime(0, 0.8, 1250);
+        moveForwardUntilClose();
         adjustAngleToStraight();
 
-        m.moveVectorTime(0, -0.2, 400);
+        m.moveVectorTime(0, -0.3, 400);
 
         m.turnDegrees(-90);
+        moveForwardUntilClose();
+
+        adjustPositionInFrontOfBlock();
+        c.collect();
+        m.moveVectorTime(0, 0.4, 1500);
+        sleep(500);
+        c.zeroMotors();
+        m.moveVectorTime(0, -0.4, 1700);
+        m.turnDegrees(-90);
+        m.moveVectorTime(0, 0.8, 1300);
+        c.push();
+
+
     }
     private boolean leftIsBlack() {
         return colorLeft.red() < 30;
@@ -85,10 +99,10 @@ public class QuasarAutonomous extends LinearOpMode {
 
     private void adjustPositionInFrontOfBlock() {
         if(leftIsBlack()) {
-            m.moveVectorTime(-0.5, 0, 500); //LEFT
+            m.moveVectorTime(-0.5, 0, 650); //LEFT
         }
         else if(rightIsBlack()) {
-            m.moveVectorTime(0.5, 0, 500); //RIGHT
+            m.moveVectorTime(0.5, 0, 650); //RIGHT
         }
         m.stop();
     }

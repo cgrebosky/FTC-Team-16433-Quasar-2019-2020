@@ -20,8 +20,8 @@ public class QuasarTeleOp extends OpMode {
         m.init();
         m.useCompBotConfig();
 
-        //pm.create(this);
-        //pm.init();
+        pm.create(this);
+        pm.init();
 
         c.create(this);
         c.init();
@@ -30,7 +30,7 @@ public class QuasarTeleOp extends OpMode {
     @Override
     public void loop() {
         m.loop();
-        //pm.loop();
+        pm.loop();
         c.loop();
 
         telemetry.update();
@@ -39,7 +39,7 @@ public class QuasarTeleOp extends OpMode {
     @Override
     public void stop() {
         m.stop();
-        //pm.stop();
+        pm.stop();
         c.stop();
 
         super.stop();
