@@ -168,7 +168,7 @@ public class Mecanum extends SubSystem {
         moveVector(x, y);
     }
     @Auto public void turnDegrees(double deg) {
-        calculatePowers(0,0,-Math.signum(deg) * 0.5);
+        calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
         setMotorPowers();
 
         double start = imu.getAngularOrientation().firstAngle;
@@ -179,9 +179,9 @@ public class Mecanum extends SubSystem {
             curr = imu.getAngularOrientation().firstAngle;
             diff = end - curr;
 
-            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg));
-            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.5);
-            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.25);
+            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
+            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
+            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
             setMotorPowers();
 
             opm.telemetry.addData("start", start);
@@ -194,6 +194,17 @@ public class Mecanum extends SubSystem {
         calculatePowers(0d,0d,0d);
         setMotorPowers();
 
+    }
+    @Auto public void goLeft(double pwr) {
+        fl.setPower(-pwr);
+        fr.setPower(pwr);
+        bl.setPower(pwr);
+        br.setPower(-pwr);
+    }
+    @Auto public void turnPwr(double pwr) {
+        calculatePowers(0,0, pwr);
+        normalizeMotorPowers();
+        setMotorPowers();
     }
 
     @Auto public void zeroMotors() {
