@@ -27,6 +27,8 @@ public class Mecanum extends SubSystem {
     //endregion
     //region Auto Variables
     BNO055IMU imu;
+
+    double startDegrees = 0;
     //endregion
 
     //region SubSystem
@@ -59,6 +61,8 @@ public class Mecanum extends SubSystem {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
+
+        startDegrees = imu.getAngularOrientation().firstAngle;
 
         opm.telemetry.addLine("Mecanum ready");
     }
@@ -158,13 +162,6 @@ public class Mecanum extends SubSystem {
         }
         zeroMotors();
     }
-    @Auto public void moveAngle(double deg) {
-        double theta = Math.toDegrees(deg + (Math.PI / 2) );
-        double x = Math.cos(theta);
-        double y = Math.sin(theta);
-
-        moveVector(x, y);
-    }
     @Auto public void turnDegrees(double deg) {
         calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
         setMotorPowers();
@@ -179,7 +176,7 @@ public class Mecanum extends SubSystem {
 
             if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
             else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
-            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
+            //else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
             setMotorPowers();
 
             opm.telemetry.addData("start", start);
@@ -193,11 +190,31 @@ public class Mecanum extends SubSystem {
         setMotorPowers();
 
     }
-    @Auto public void goLeft(double pwr) {
-        fl.setPower(-pwr);
-        fr.setPower(pwr);
-        bl.setPower(pwr);
-        br.setPower(-pwr);
+    @Auto public void turnGlobalDegrees(double deg) {
+        calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
+        setMotorPowers();
+
+        double start = imu.getAngularOrientation().firstAngle;
+        double end = deg + startDegrees;
+        double curr = start;
+        double diff = end - curr;
+        while(Math.abs(diff) > 5 && lop.opModeIsActive()) {
+            curr = imu.getAngularOrientation().firstAngle;
+            diff = end - curr;
+
+            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
+            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
+            setMotorPowers();
+
+            opm.telemetry.addData("start", start);
+            opm.telemetry.addData("end", end);
+            opm.telemetry.addData("curr", curr);
+            opm.telemetry.addData("diff", diff);
+            opm.telemetry.update();
+        }
+
+        calculatePowers(0d,0d,0d);
+        setMotorPowers();
     }
     @Auto public void turnPwr(double pwr) {
         calculatePowers(0,0, pwr);

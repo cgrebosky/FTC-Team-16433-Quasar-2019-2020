@@ -1,6 +1,7 @@
 package quasar.testing.subsystems;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import quasar.lib.SubSystem;
@@ -20,10 +21,10 @@ public class MecanumAuto extends LinearOpMode {
 
         waitForStart();
 
-        m.moveVectorTime(1,0,1000);
-        m.moveVectorTime(0,1,1000);
-        m.moveVectorTime(-1,0,1000);
-        m.moveVectorTime(0,-1,1000);
+        m.turnGlobalDegrees(90);
+        m.turnGlobalDegrees(-90);
+        m.turnGlobalDegrees(0);
+        m.turnGlobalDegrees(180);
 
     }
 }
