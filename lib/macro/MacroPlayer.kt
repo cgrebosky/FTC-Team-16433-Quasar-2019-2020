@@ -15,7 +15,7 @@ import java.io.ObjectInputStream
 import java.util.*
 
 @Autonomous(name = "Macro Player")
-class MacroPlayer: LinearOpMode() {
+open class MacroPlayer: LinearOpMode() {
 
     lateinit var recording: LinkedList<MacroState>
 
@@ -78,7 +78,14 @@ class MacroPlayer: LinearOpMode() {
 
         telePrint("Initializing robot")
 
-        //region INITIALIZE ROBOT
+        initRobot()
+
+        telePrint("Loading data")
+        readData()
+
+        telePrint("Ready")
+    }
+    fun initRobot() {
         me.create(this)
         me.init()
         me.useCompBotConfig()
@@ -88,12 +95,6 @@ class MacroPlayer: LinearOpMode() {
 
         co.create(this)
         co.init()
-        //endregion
-
-        telePrint("Loading data")
-        readData()
-
-        telePrint("Ready")
     }
 
     fun actState(m: MacroState) {
