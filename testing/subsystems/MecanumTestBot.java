@@ -1,10 +1,12 @@
 package quasar.testing.subsystems;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import quasar.subsystems.Mecanum;
 
+@Disabled
 @TeleOp(name = "Mecanum Test (Test Bot)", group = "Testing")
 public class MecanumTestBot extends OpMode {
 
