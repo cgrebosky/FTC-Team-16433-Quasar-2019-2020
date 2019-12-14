@@ -148,8 +148,6 @@ public class Mecanum extends SubSystem {
         setMotorPowers();
     }
     @Auto public void moveVectorTime(double x, double y, long timeMS) {
-        long endTime = System.currentTimeMillis() + timeMS;
-
         try {
             moveVector(x, y);
             sleep(timeMS - 300);
