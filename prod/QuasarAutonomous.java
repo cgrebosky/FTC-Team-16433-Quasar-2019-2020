@@ -93,7 +93,7 @@ public class QuasarAutonomous extends LinearOpMode {
             c.zeroMotors();
             turnDegrees(180);
 
-            m.moveVectorTime(0, 0.8, 1150);
+            m.moveVectorTime(0, 0.8, 115);
             moveForwardUntilClose();
             adjustAngleToStraight();
 
