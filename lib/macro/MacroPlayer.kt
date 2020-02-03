@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
 import quasar.subsystems.Collector
+import quasar.subsystems.Lift
 import quasar.subsystems.Mecanum
 import quasar.subsystems.PlatformMover
 import java.io.File
@@ -23,6 +24,7 @@ open class MacroPlayer: LinearOpMode() {
     val me = Mecanum()
     val pf = PlatformMover()
     val co = Collector()
+    val li = Lift()
     //endregion
 
     override fun runOpMode() {
@@ -95,6 +97,9 @@ open class MacroPlayer: LinearOpMode() {
 
         co.create(this)
         co.init()
+
+        li.create(this)
+        li.init()
     }
 
     fun actState(m: MacroState) {
@@ -107,8 +112,14 @@ open class MacroPlayer: LinearOpMode() {
         pf.left.position  = m.pfLeftPos
         pf.right.position = m.pfRightPos
 
-        co.left.power = m.colLeftPow;
-        co.right.power = m.colRightPow;
+        co.left.power = m.colLeftPow
+        co.right.power = m.colRightPow
+
+        li.liftLeft.power = m.liftPow
+        li.liftRight.power = m.liftPow
+        li.extenderLeft.power = m.extenderPow
+        li.extenderRight.power = m.extenderPow
+        //li.grabber.power= m.grabberPos
         //endregion
     }
 }

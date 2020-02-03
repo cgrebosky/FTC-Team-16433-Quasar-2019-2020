@@ -151,17 +151,6 @@ public class Mecanum extends SubSystem {
         normalizeMotorPowers();
         setMotorPowers();
     }
-    @Auto public void moveVectorTime(double x, double y, long timeMS) {
-        try {
-            moveVector(x, y);
-            sleep(timeMS - 300);
-            moveVector(x / 2, y / 2);
-            sleep(300);
-        } catch (InterruptedException e) {
-            zeroMotors();
-        }
-        zeroMotors();
-    }
     @Auto public void turnDegrees(double deg) {
         calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
         setMotorPowers();
@@ -170,13 +159,13 @@ public class Mecanum extends SubSystem {
         double end = deg + start;
         double curr = start;
         double diff = end - curr;
-        while(Math.abs(diff) > 5 && lop.opModeIsActive()) {
+        while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
             curr = imu.getAngularOrientation().firstAngle;
             diff = end - curr;
 
             if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
             else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
-            //else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
+            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
             setMotorPowers();
 
             opm.telemetry.addData("start", start);
@@ -189,37 +178,33 @@ public class Mecanum extends SubSystem {
         calculatePowers(0d,0d,0d);
         setMotorPowers();
 
-    }
-    @Auto public void turnGlobalDegrees(double deg) {
-        calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
-        setMotorPowers();
-
-        double start = imu.getAngularOrientation().firstAngle;
-        double end = deg + startDegrees;
-        double curr = start;
-        double diff = end - curr;
-        while(Math.abs(diff) > 5 && lop.opModeIsActive()) {
-            curr = imu.getAngularOrientation().firstAngle;
-            diff = end - curr;
-
-            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
-            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
-            setMotorPowers();
-
-            opm.telemetry.addData("start", start);
-            opm.telemetry.addData("end", end);
-            opm.telemetry.addData("curr", curr);
-            opm.telemetry.addData("diff", diff);
-            opm.telemetry.update();
-        }
-
-        calculatePowers(0d,0d,0d);
-        setMotorPowers();
     }
     @Auto public void turnPwr(double pwr) {
         calculatePowers(0,0, pwr);
         normalizeMotorPowers();
         setMotorPowers();
+    }
+    @Auto public void moveForwardTicks(int ticks, double pwr) {
+        int endingTicks = sumEncoderValues() + 4 * ticks;
+
+        if(ticks > 0) while(endingTicks > sumEncoderValues()) {
+            moveVector(0, pwr);
+            opm.telemetry.addData("tick sum", sumEncoderValues());
+            opm.telemetry.update();
+        }
+        else while(endingTicks < sumEncoderValues()) {
+            moveVector(0, pwr);
+            opm.telemetry.addData("tick sum", sumEncoderValues());
+            opm.telemetry.update();
+        }
+        zeroMotors();
+    }
+    @Auto private int[] getEncoderValues() {
+        return new int[] {fl.getCurrentPosition(), br.getCurrentPosition(), bl.getCurrentPosition(), br.getCurrentPosition()};
+    }
+    @Auto public int sumEncoderValues() {
+        int[] vals = getEncoderValues();
+        return vals[0] + vals[1] + vals[2] + vals[3];
     }
 
     @Auto public void zeroMotors() {

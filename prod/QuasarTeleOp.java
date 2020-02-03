@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import quasar.subsystems.Collector;
+import quasar.subsystems.Lift;
 import quasar.subsystems.Mecanum;
 import quasar.subsystems.PlatformMover;
 
@@ -13,6 +14,7 @@ public class QuasarTeleOp extends OpMode {
     Mecanum m = new Mecanum();
     PlatformMover pm = new PlatformMover();
     Collector c = new Collector();
+    Lift l = new Lift();
 
     @Override
     public void init() {
@@ -25,6 +27,9 @@ public class QuasarTeleOp extends OpMode {
 
         c.create(this);
         c.init();
+
+        l.create(this);
+        l.init();
     }
 
     @Override
@@ -32,6 +37,7 @@ public class QuasarTeleOp extends OpMode {
         m.loop();
         pm.loop();
         c.loop();
+        l.loop();
 
         telemetry.update();
     }
@@ -41,6 +47,7 @@ public class QuasarTeleOp extends OpMode {
         m.stop();
         pm.stop();
         c.stop();
+        l.stop();
 
         super.stop();
     }
