@@ -11,10 +11,8 @@ import quasar.lib.SubSystem;
 
 public class Lift extends SubSystem {
 
-    final double limitLeftOut = 0.9, limitLeftIn = 0.5, limitRightOut = 0, limitRightIn = 0.4;
     final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.14, angleIn = 0, angleOut = 1;
 
-    Servo limitLeft, limitRight;
     public DcMotor liftLeft, liftRight;
     public CRServo extenderLeft, extenderRight;
     public Servo clawLeft, clawRight, clawAngle;
@@ -41,11 +39,6 @@ public class Lift extends SubSystem {
         clawRight = hardwareMap.servo.get("clawRight");
         clawAngle = hardwareMap.servo.get("clawAngle");
 
-        limitLeft = hardwareMap.servo.get("limitLeft");
-        limitRight = hardwareMap.servo.get("limitRight");
-        limitLeft.setPosition(limitLeftIn);
-        limitRight.setPosition(limitRightIn);
-
         liftLimitLeft = hardwareMap.get(DigitalChannel.class, "liftLimitLeft");
         liftLimitRight = hardwareMap.get(DigitalChannel.class, "liftLimitRight");
 
@@ -58,8 +51,6 @@ public class Lift extends SubSystem {
         controlLift();
         controlArms();
         controlClaw();
-        limitLeft.setPosition(limitLeftOut);
-        limitRight.setPosition(limitRightOut);
 
         opm.telemetry.addLine("LIFT");
         opm.telemetry.addData("    Extender Power", gamepad2.left_stick_y);
