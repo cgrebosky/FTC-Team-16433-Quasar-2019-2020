@@ -19,12 +19,6 @@ public class MecanumTickTesting extends OpMode {
 
     @Override
     public void loop() {
-        if(-gamepad1.left_stick_y > gamepad1.left_stick_x) {
-            m.moveVector(0,-gamepad1.left_stick_y);
-        } else {
-            m.zeroMotors();
-        }
-        telemetry.addData("Encoder Sum", m.sumEncoderValues());
-        telemetry.update();
+
     }
 }

@@ -29,6 +29,10 @@ public class Mecanum extends SubSystem {
     BNO055IMU imu;
 
     double startDegrees = 0;
+
+    double blockToTick = 900;
+    double degToTick = 9.8;
+    double blockToTickStrafe = 1200;
     //endregion
 
     //region SubSystem
@@ -47,6 +51,45 @@ public class Mecanum extends SubSystem {
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        startDegrees = imu.getAngularOrientation().firstAngle;
+
+        opm.telemetry.addLine("Mecanum ready");
+    }
+    @Override public void autoInit() {
+        fl = hardwareMap.dcMotor.get("fl");
+        fr = hardwareMap.dcMotor.get("fr");
+        bl = hardwareMap.dcMotor.get("bl");
+        br = hardwareMap.dcMotor.get("br");
+
+        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        fl.setTargetPosition(0);
+        fr.setTargetPosition(0);
+        bl.setTargetPosition(0);
+        br.setTargetPosition(0);
+
+        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
@@ -146,65 +189,51 @@ public class Mecanum extends SubSystem {
 
     }
 
-    @Auto public void moveVector(double x, double y) {
-        calculatePowers(y, x, 0);
-        normalizeMotorPowers();
-        setMotorPowers();
+    @Auto private void setAutoSpeed(double pwr) {
+        fl.setPower(pwr);
+        fr.setPower(pwr);
+        bl.setPower(pwr);
+        br.setPower(pwr);
     }
-    @Auto public void turnDegrees(double deg) {
-        calculatePowers(0,0,-Math.signum(deg) * 0.5 / 3);
-        setMotorPowers();
+    @Auto public void fwdTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() + ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() + ticks);
+        br.setTargetPosition(br.getCurrentPosition() + ticks);
 
-        double start = imu.getAngularOrientation().firstAngle;
-        double end = deg + start;
-        double curr = start;
-        double diff = end - curr;
-        while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
-            curr = imu.getAngularOrientation().firstAngle;
-            diff = end - curr;
+        setAutoSpeed(pwr);
 
-            if(Math.abs(diff) > 30) calculatePowers(0,0,-Math.signum(deg) * 0.3);
-            else if(Math.abs(diff) > 15) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.5);
-            else if(Math.abs(diff) > 5) calculatePowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
-            setMotorPowers();
-
-            opm.telemetry.addData("start", start);
-            opm.telemetry.addData("end", end);
-            opm.telemetry.addData("curr", curr);
-            opm.telemetry.addData("diff", diff);
-            opm.telemetry.update();
-        }
-
-        calculatePowers(0d,0d,0d);
-        setMotorPowers();
-
+        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
     }
-    @Auto public void turnPwr(double pwr) {
-        calculatePowers(0,0, pwr);
-        normalizeMotorPowers();
-        setMotorPowers();
-    }
-    @Auto public void moveForwardTicks(int ticks, double pwr) {
-        int endingTicks = sumEncoderValues() + 4 * ticks;
+    @Auto public void turnLeftTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() - ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() - ticks);
+        br.setTargetPosition(br.getCurrentPosition() + ticks);
 
-        if(ticks > 0) while(endingTicks > sumEncoderValues()) {
-            moveVector(0, pwr);
-            opm.telemetry.addData("tick sum", sumEncoderValues());
-            opm.telemetry.update();
-        }
-        else while(endingTicks < sumEncoderValues()) {
-            moveVector(0, pwr);
-            opm.telemetry.addData("tick sum", sumEncoderValues());
-            opm.telemetry.update();
-        }
-        zeroMotors();
+        setAutoSpeed(pwr);
+
+        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
     }
-    @Auto private int[] getEncoderValues() {
-        return new int[] {fl.getCurrentPosition(), br.getCurrentPosition(), bl.getCurrentPosition(), br.getCurrentPosition()};
+    @Auto public void strafeLeftTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() - ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() + ticks);
+        br.setTargetPosition(br.getCurrentPosition() - ticks);
+
+        setAutoSpeed(pwr);
+
+        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
     }
-    @Auto public int sumEncoderValues() {
-        int[] vals = getEncoderValues();
-        return vals[0] + vals[1] + vals[2] + vals[3];
+
+    @Auto public void fwdBlocks(double blocks, double pwr) {
+        fwdTicks((int) (blockToTick * blocks), pwr);
+    }
+    @Auto public void turnLeftDegrees(double degrees, double pwr) {
+        turnLeftTicks((int) (degToTick * degrees), pwr);
+    }
+    @Auto public void strafeLeftBlock(double blocks, double pwr) {
+        strafeLeftTicks((int) (blockToTickStrafe * blocks), pwr);
     }
 
     @Auto public void zeroMotors() {
