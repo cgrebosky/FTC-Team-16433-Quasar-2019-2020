@@ -38,6 +38,9 @@ public class Lift extends SubSystem {
         clawLeft = hardwareMap.servo.get("clawLeft");
         clawRight = hardwareMap.servo.get("clawRight");
         clawAngle = hardwareMap.servo.get("clawAngle");
+        clawLeft.setPosition(clawLeftOpen);
+        clawRight.setPosition(clawRightOpen);
+        clawAngle.setPosition(angleIn);
 
         liftLimitLeft = hardwareMap.get(DigitalChannel.class, "liftLimitLeft");
         liftLimitRight = hardwareMap.get(DigitalChannel.class, "liftLimitRight");
