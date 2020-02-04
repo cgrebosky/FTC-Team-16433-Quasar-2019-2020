@@ -67,12 +67,12 @@ public class Collector extends SubSystem {
     }
 
     public void collect() {
-        left.setPower(0.8);
-        right.setPower(1);
+        left.setPower(-0.8);
+        right.setPower(-1);
     }
     public void push() {
-        left.setPower(-1);
-        right.setPower(-1);
+        left.setPower(1);
+        right.setPower(1);
     }
     public void zeroMotors() {
         left.setPower(0);
