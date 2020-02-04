@@ -34,18 +34,18 @@ public class PlatformMover extends SubSystem {
         opm.telemetry.addLine("    Platform hooks are currently " + (armsDown?"DOWN":"UP") );
     }
     //endregion
-    //region platformMover
+    //region PlatformMover
     private void toggleHooks() {
         armsDown = GamepadState.toggle(gamepad1.dpad_right, prev1.dpad_right, armsDown);
 
         if(armsDown) lowerHooks();
         else liftHooks();
     }
-    private void liftHooks() {
+    public void liftHooks() {
         left.setPosition(LEFT_UP);
         right.setPosition(RIGHT_UP);
     }
-    private void lowerHooks() {
+    public void lowerHooks() {
         left.setPosition(LEFT_DOWN);
         right.setPosition(RIGHT_DOWN);
     }

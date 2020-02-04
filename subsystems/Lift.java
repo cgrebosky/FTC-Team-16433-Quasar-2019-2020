@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import quasar.lib.GamepadState;
 import quasar.lib.SubSystem;
 
+import static java.lang.Thread.sleep;
+
 public class Lift extends SubSystem {
 
     final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.14, angleIn = 0, angleOut = 1;
@@ -108,5 +110,22 @@ public class Lift extends SubSystem {
             clawLeft.setPosition(clawLeftOpen);
             clawRight.setPosition(clawRightOpen);
         }
+    }
+    public void closeClaw() {
+        clawLeft.setPosition(clawLeftClosed);
+        clawRight.setPosition(clawRightClosed);
+    }
+    public void extendArm() {
+        extenderLeft.setPower(0.5);
+        extenderRight.setPower(0.5);
+        try {
+            sleep(500);
+        } catch (InterruptedException e) {
+            //Get SWALLOWED e
+        }
+
+        extenderLeft.setPower(0);
+        extenderRight.setPower(0);
+        clawAngle.setPosition(angleOut);
     }
 }
