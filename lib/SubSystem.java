@@ -17,8 +17,9 @@ abstract public class SubSystem {
     protected OpMode       opm;
 
     //These are merely niceties, they can easily be accessed through opm.
-    protected Gamepad gamepad1;
-    protected Gamepad gamepad2;
+    protected Gamepad gamepad1, gamepad2;
+    protected GamepadState prev1 = new GamepadState(), prev2 = new GamepadState();
+
     protected HardwareMap hardwareMap;
 
     //region Methods
@@ -43,6 +44,28 @@ abstract public class SubSystem {
     @Tele public void teleInit() { init(); }
     @Auto public void autoInit() { init(); }
     @Tele public abstract void loop();
+    /**
+     * Call this at the end of your loop() method, this will add functionality such as telemetry,
+     * advanced gamepad controls, &c.
+     */
+    @Tele public void postLoop() {
+        updateGamepadStates();
+        telemetry();
+    }
+    /**
+     * This will update prevs, allowing for more advanced gamepad control.
+     * This should be called at the end of loop() method
+     */
+    @Tele protected void updateGamepadStates() {
+        prev1 = new GamepadState(gamepad1);
+        prev2 = new GamepadState(gamepad2);
+    }
+    /**
+     * Put all your telemetry code in here, it will be automatically called in postLoop() method.
+     */
+    @Tele protected void telemetry() {}
+
+    public abstract void stop();
 
     //endregion
     //region Annotations

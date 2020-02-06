@@ -1,18 +1,18 @@
 package quasar.subsystems;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.MoreMath;
 import quasar.lib.SubSystem;
 
+import static java.lang.Thread.sleep;
+
 public class Mecanum extends SubSystem {
 
-    private DcMotor fl, fr, bl, br;
+    //region Tele Variables
+    public DcMotor fl, fr, bl, br;
 
     private final double THRESHOLD = 0.1;
 
@@ -24,9 +24,19 @@ public class Mecanum extends SubSystem {
     private final double[] TURN   = {1,-1,1,-1};
 
     private       double[] powers = {0, 0, 0,0};
+    //endregion
+    //region Auto Variables
+    BNO055IMU imu;
 
-    @Override
-    public void init() {
+    double startDegrees = 0;
+
+    double blockToTick = 900;
+    double degToTick = 9.8;
+    double blockToTickStrafe = 1200;
+    //endregion
+
+    //region SubSystem
+    @Override public void init() {
         fl = hardwareMap.dcMotor.get("fl");
         fr = hardwareMap.dcMotor.get("fr");
         bl = hardwareMap.dcMotor.get("bl");
@@ -42,39 +52,105 @@ public class Mecanum extends SubSystem {
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        startDegrees = imu.getAngularOrientation().firstAngle;
+
         opm.telemetry.addLine("Mecanum ready");
     }
+    @Override public void autoInit() {
+        fl = hardwareMap.dcMotor.get("fl");
+        fr = hardwareMap.dcMotor.get("fr");
+        bl = hardwareMap.dcMotor.get("bl");
+        br = hardwareMap.dcMotor.get("br");
 
-    @Override
-    @Tele public void loop() {
+        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        fl.setTargetPosition(0);
+        fr.setTargetPosition(0);
+        bl.setTargetPosition(0);
+        br.setTargetPosition(0);
+
+        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        startDegrees = imu.getAngularOrientation().firstAngle;
+
+        opm.telemetry.addLine("Mecanum ready");
+    }
+    @Override @Tele public void loop() {
 
         zeroControls();
         calculatePowers(fwd, left, rot);
         normalizeMotorPowers();
         setMotorPowers();
 
-        opm.telemetry.addData("FL", powers[0]);
-        opm.telemetry.addData("FR", powers[1]);
-        opm.telemetry.addData("BL", powers[2]);
-        opm.telemetry.addData("BR", powers[3]);
-        opm.telemetry.addLine();
-        opm.telemetry.addData("Forward", fwd);
-        opm.telemetry.addData("Left", left);
-        opm.telemetry.addData("Rotation", rot);
-        opm.telemetry.addLine();
+        postLoop();
     }
-
+    @Override public void stop() {
+        zeroMotors();
+    }
+    @Override protected void telemetry() {
+        opm.telemetry.addLine("MECANUM");
+        opm.telemetry.addData("    FL", powers[0]);
+        opm.telemetry.addData("    FR", powers[1]);
+        opm.telemetry.addData("    BL", powers[2]);
+        opm.telemetry.addData("    BR", powers[3]);
+        opm.telemetry.addLine();
+        opm.telemetry.addData("    Forward", fwd);
+        opm.telemetry.addData("    Left", left);
+        opm.telemetry.addData("    Rotation", rot);
+        opm.telemetry.addLine();
+        opm.telemetry.addData("    X (Active)", imu.getAngularOrientation().firstAngle);
+        opm.telemetry.addData("    Y", imu.getAngularOrientation().secondAngle);
+        opm.telemetry.addData("    Z", imu.getAngularOrientation().thirdAngle);
+    }
+    //endregion SubSystem
+    //region Mecanum
     public void useTestBotConfig() {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     public void useCompBotConfig() {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
-        bl.setDirection(DcMotorSimple.Direction.FORWARD);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     @Tele private void calculatePowers(double forward, double strafe, double rotation) {
@@ -84,14 +160,18 @@ public class Mecanum extends SubSystem {
         powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rotation, TURN));
     }
     @Tele private void zeroControls() {
-        left = gamepad1.left_stick_x;
-        fwd = -gamepad1.left_stick_y;
-        rot = gamepad1.right_stick_x;
+        left = scaleControls(gamepad1.left_stick_x);
+        fwd = -scaleControls(gamepad1.left_stick_y);
+        rot = scaleControls(gamepad1.right_stick_x);
 
         left = (Math.abs(left)<THRESHOLD)?0:left;
         fwd = (Math.abs(fwd)<THRESHOLD)?0:fwd;
         rot = (Math.abs(rot)<THRESHOLD)?0:rot;
     }
+    @Tele private double scaleControls(double x) {
+        return Math.signum(x) * Math.pow(x, 2);
+    }
+
     private void setMotorPowers() {
         fl.setPower(powers[0]);
         fr.setPower(powers[1]);
@@ -109,32 +189,140 @@ public class Mecanum extends SubSystem {
 
     }
 
-    @Auto public void moveVector(double x, double y) {
-        calculatePowers(y, x, 0);
+    @Auto private void setAutoSpeed(double pwr) {
+        fl.setPower(pwr);
+        fr.setPower(pwr);
+        bl.setPower(pwr);
+        br.setPower(pwr);
+    }
+
+    @Auto private boolean isBusy() {
+        int threshold = 3;
+        int value = 0;
+        if(fl.isBusy()) value += 1;
+        if(fr.isBusy()) value += 1;
+        if(bl.isBusy()) value += 1;
+        if(br.isBusy()) value += 1;
+
+        return value >= threshold;
+    }
+
+    @Auto public void setPowers(double forward, double strafe, double rotation) {
+        encoderMode();
+
+        calculatePowers(forward, strafe, rotation);
         normalizeMotorPowers();
         setMotorPowers();
     }
-    @Auto public void moveAngle(double deg) {
-        double theta = Math.toDegrees(deg + (Math.PI / 2) );
-        double x = Math.cos(theta);
-        double y = Math.sin(theta);
 
-        moveVector(x, y);
+    @Auto private void fwdTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() + ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() + ticks);
+        br.setTargetPosition(br.getCurrentPosition() + ticks);
+
+        setAutoSpeed(pwr);
+
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
     }
-    @Auto public void turnDegrees(double deg) {
-        calculatePowers(0,0,Math.signum(deg));
-        setMotorPowers();
+    @Auto private void turnLeftTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() - ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() - ticks);
+        br.setTargetPosition(br.getCurrentPosition() + ticks);
 
-        long endTime = System.currentTimeMillis() + 5000;
-        while(System.currentTimeMillis() < endTime);
+        setAutoSpeed(pwr);
 
-        calculatePowers(0d,0d,0d);
-        setMotorPowers();
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
+    }
+    @Auto private void strafeLeftTicks(int ticks, double pwr) {
+        fl.setTargetPosition(fl.getCurrentPosition() - ticks);
+        fr.setTargetPosition(fr.getCurrentPosition() + ticks);
+        bl.setTargetPosition(bl.getCurrentPosition() + ticks);
+        br.setTargetPosition(br.getCurrentPosition() - ticks);
 
+        setAutoSpeed(pwr);
+
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
+    }
+
+    @Auto public void fwdBlocks(double blocks, double pwr) {
+        fwdTicks((int) (blockToTick * blocks), pwr);
+    }
+    @Auto public void turnLeftDegrees(double degrees, double pwr) {
+        turnLeftTicks((int) (degToTick * degrees), pwr);
+    }
+    @Auto public void strafeLeftBlock(double blocks, double pwr) {
+        strafeLeftTicks((int) (blockToTickStrafe * blocks), pwr);
+    }
+
+    @Auto public void fwdSecs(double secs, double pwr) {
+        encoderMode();
+
+        setAutoSpeed(pwr);
+
+        long endTime = (long) (System.currentTimeMillis() + 1000 * secs);
+        while(System.currentTimeMillis() < endTime && lop.opModeIsActive()) lop.idle();
+
+        runToPositionMode();
+    }
+
+    /**
+     * This resets our angle to whatever GLOBAL angle we want.  For example, if we want to go back to our
+     * original angle exactly, we'd enter turnGlobalDegrees(0).  This is necessary because our dead-
+     * reckoning angle system is faster, but we always slightly get it off.  By doing this every once
+     * in a while, we can avoid propagating errors
+     * @param deg
+     */
+    @Auto public void turnGlobalDegrees(double deg) {
+        encoderMode();
+
+        double start = imu.getAngularOrientation().firstAngle;
+        double end = deg + startDegrees;
+
+        double diff = end - imu.getAngularOrientation().firstAngle;
+        double timeOut = System.currentTimeMillis() + 5000;
+        while(Math.abs(diff) > 2 && System.currentTimeMillis() < timeOut && lop.opModeIsActive()) {
+            diff = end - imu.getAngularOrientation().firstAngle;
+
+            double rot = Math.abs(diff) * 0.01;
+            rot = Math.max(rot, 0.1);
+            rot = Math.min(rot, 0.7);
+            rot *= -Math.signum(diff);
+
+            calculatePowers(0,0,rot);
+            setMotorPowers();
+
+            opm.telemetry.addData("Power", rot);
+            opm.telemetry.addData("Current Angle", imu.getAngularOrientation());
+            opm.telemetry.update();
+        }
+
+        runToPositionMode();
     }
 
     @Auto public void zeroMotors() {
         powers = new double[] {0d,0d,0d,0d};
         setMotorPowers();
     }
+
+    @Auto public void runToPositionMode() {
+        fl.setTargetPosition(0);
+        fr.setTargetPosition(0);
+        bl.setTargetPosition(0);
+        br.setTargetPosition(0);
+
+        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    @Auto public void encoderMode() {
+        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    //endregion Mecanum
+
 }
