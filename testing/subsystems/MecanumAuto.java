@@ -12,36 +12,20 @@ import quasar.subsystems.Mecanum;
 @Autonomous(name = "Mecanum Auto Test")
 public class MecanumAuto extends LinearOpMode {
 
-    //Mecanum m = new Mecanum();
+    Mecanum m = new Mecanum();
 
     @Override
     public void runOpMode() {
-        //m.create(this);
-        //m.init();
-        //m.useTestBotConfig();
-
-        boolean value = false;
-        boolean prevX = true;
-        while(!isStarted() && !gamepad1.a) {
-            try {
-                value = GamepadState.toggle(gamepad1.x, prevX, value);
-                prevX = gamepad1.x;
-                Thread.sleep(11);
-                telemetry.addData("state", value);
-                telemetry.update();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-        }
-        telemetry.addLine("READY");
-        telemetry.update();
+        m.create(this);
+        m.autoInit();
+        m.useCompBotConfig();
 
         waitForStart();
-        telemetry.addLine("STARTED");
-        telemetry.update();
 
-        sleep(1000);
+        m.turnGlobalDegrees(90);
+        m.turnGlobalDegrees(0);
+
+        m.turnGlobalDegrees(180);
 
 
     }

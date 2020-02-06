@@ -195,7 +195,27 @@ public class Mecanum extends SubSystem {
         bl.setPower(pwr);
         br.setPower(pwr);
     }
-    @Auto public void fwdTicks(int ticks, double pwr) {
+
+    @Auto private boolean isBusy() {
+        int threshold = 3;
+        int value = 0;
+        if(fl.isBusy()) value += 1;
+        if(fr.isBusy()) value += 1;
+        if(bl.isBusy()) value += 1;
+        if(br.isBusy()) value += 1;
+
+        return value >= threshold;
+    }
+
+    @Auto public void setPowers(double forward, double strafe, double rotation) {
+        encoderMode();
+
+        calculatePowers(forward, strafe, rotation);
+        normalizeMotorPowers();
+        setMotorPowers();
+    }
+
+    @Auto private void fwdTicks(int ticks, double pwr) {
         fl.setTargetPosition(fl.getCurrentPosition() + ticks);
         fr.setTargetPosition(fr.getCurrentPosition() + ticks);
         bl.setTargetPosition(bl.getCurrentPosition() + ticks);
@@ -203,9 +223,9 @@ public class Mecanum extends SubSystem {
 
         setAutoSpeed(pwr);
 
-        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
     }
-    @Auto public void turnLeftTicks(int ticks, double pwr) {
+    @Auto private void turnLeftTicks(int ticks, double pwr) {
         fl.setTargetPosition(fl.getCurrentPosition() - ticks);
         fr.setTargetPosition(fr.getCurrentPosition() + ticks);
         bl.setTargetPosition(bl.getCurrentPosition() - ticks);
@@ -213,9 +233,9 @@ public class Mecanum extends SubSystem {
 
         setAutoSpeed(pwr);
 
-        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
     }
-    @Auto public void strafeLeftTicks(int ticks, double pwr) {
+    @Auto private void strafeLeftTicks(int ticks, double pwr) {
         fl.setTargetPosition(fl.getCurrentPosition() - ticks);
         fr.setTargetPosition(fr.getCurrentPosition() + ticks);
         bl.setTargetPosition(bl.getCurrentPosition() + ticks);
@@ -223,7 +243,7 @@ public class Mecanum extends SubSystem {
 
         setAutoSpeed(pwr);
 
-        while(fl.isBusy() && fr.isBusy() || bl.isBusy() && br.isBusy()) lop.idle();
+        while(isBusy() && lop.opModeIsActive()) lop.idle();
     }
 
     @Auto public void fwdBlocks(double blocks, double pwr) {
@@ -236,9 +256,72 @@ public class Mecanum extends SubSystem {
         strafeLeftTicks((int) (blockToTickStrafe * blocks), pwr);
     }
 
+    @Auto public void fwdSecs(double secs, double pwr) {
+        encoderMode();
+
+        setAutoSpeed(pwr);
+
+        long endTime = (long) (System.currentTimeMillis() + 1000 * secs);
+        while(System.currentTimeMillis() < endTime && lop.opModeIsActive()) lop.idle();
+
+        runToPositionMode();
+    }
+
+    /**
+     * This resets our angle to whatever GLOBAL angle we want.  For example, if we want to go back to our
+     * original angle exactly, we'd enter turnGlobalDegrees(0).  This is necessary because our dead-
+     * reckoning angle system is faster, but we always slightly get it off.  By doing this every once
+     * in a while, we can avoid propagating errors
+     * @param deg
+     */
+    @Auto public void turnGlobalDegrees(double deg) {
+        encoderMode();
+
+        double start = imu.getAngularOrientation().firstAngle;
+        double end = deg + startDegrees;
+
+        double diff = end - imu.getAngularOrientation().firstAngle;
+        double timeOut = System.currentTimeMillis() + 5000;
+        while(Math.abs(diff) > 2 && System.currentTimeMillis() < timeOut && lop.opModeIsActive()) {
+            diff = end - imu.getAngularOrientation().firstAngle;
+
+            double rot = Math.abs(diff) * 0.01;
+            rot = Math.max(rot, 0.1);
+            rot = Math.min(rot, 0.7);
+            rot *= -Math.signum(diff);
+
+            calculatePowers(0,0,rot);
+            setMotorPowers();
+
+            opm.telemetry.addData("Power", rot);
+            opm.telemetry.addData("Current Angle", imu.getAngularOrientation());
+            opm.telemetry.update();
+        }
+
+        runToPositionMode();
+    }
+
     @Auto public void zeroMotors() {
         powers = new double[] {0d,0d,0d,0d};
         setMotorPowers();
+    }
+
+    @Auto public void runToPositionMode() {
+        fl.setTargetPosition(0);
+        fr.setTargetPosition(0);
+        bl.setTargetPosition(0);
+        br.setTargetPosition(0);
+
+        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    @Auto public void encoderMode() {
+        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     //endregion Mecanum
 
