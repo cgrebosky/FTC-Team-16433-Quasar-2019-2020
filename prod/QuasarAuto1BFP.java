@@ -3,6 +3,7 @@ package quasar.prod;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -12,8 +13,8 @@ import quasar.subsystems.Lift;
 import quasar.subsystems.Mecanum;
 import quasar.subsystems.PlatformMover;
 
-@Autonomous(name = "Quasar Autonomous", group = "Prod")
-public class QuasarAutonomous extends LinearOpMode {
+@Autonomous(name = "1 Block & Foundation Move", group = "Prod")
+public class QuasarAuto1BFP extends LinearOpMode {
 
     Mecanum m = new Mecanum();
     Collector c = new Collector();
@@ -23,9 +24,10 @@ public class QuasarAutonomous extends LinearOpMode {
     ColorSensor colorLeft, colorRight;
     DistanceSensor distance;
 
-    private enum COLOR { RED, BLUE }
     COLOR side = COLOR.BLUE;
-    int colorCoef = 1;
+    private int colorCoef = 1;
+    private enum POSITION {LEFT, CENTER, RIGHT}
+    POSITION pos = POSITION.CENTER;
     long delay = 0;
 
     @Override
@@ -37,13 +39,27 @@ public class QuasarAutonomous extends LinearOpMode {
 
         sleep(delay);
 
+        c.open();
         m.fwdBlocks(1, 0.5);
 
-        sleep(100);
+        m.strafeLeftBlock(-0.22 * colorCoef,0.35);
 
-        m.strafeLeftBlock(-1,0.3);
+        observeColor();
 
+        m.fwdBlocks(-1.8, 0.7);
+        m.turnGlobalDegrees(90 * colorCoef);
+        m.fwdBlocks(-4, 0.7);
+        m.turnGlobalDegrees(180 * colorCoef);
 
+        fwdToPlatform();
+
+        deliverBlock();
+
+        platformArc();
+
+        m.setPowers(0.5,0,0);
+        sleep(1700);
+        m.zeroMotors();
 
     }
     private void say(Object m) {
@@ -80,7 +96,7 @@ public class QuasarAutonomous extends LinearOpMode {
         }
 
         if(side == COLOR.RED) colorCoef = 1;
-        else colorCoef = 0;
+        else colorCoef = -1;
 
         telemetry.addData("Side", side);
         telemetry.addData("Delay", ( (double) delay) / 1000.0 + " seconds");
@@ -101,8 +117,8 @@ public class QuasarAutonomous extends LinearOpMode {
         l.init();
 
         colorLeft = hardwareMap.get(ColorSensor.class, "colorLeft");
-        distance = hardwareMap.get(DistanceSensor.class, "colorLeft");
         colorRight = hardwareMap.get(ColorSensor.class, "colorRight");
+        distance = hardwareMap.get(DistanceSensor.class, "distance");
     }
 
     private void checkIfCanceled() {
@@ -114,5 +130,70 @@ public class QuasarAutonomous extends LinearOpMode {
         }
     }
 
+    private void moveCloseToMinerals() {
+        m.encoderMode();
+
+        long timeOut = System.currentTimeMillis() + 3000;
+        while(distance.getDistance(DistanceUnit.CM) > 6 && System.currentTimeMillis() < timeOut && opModeIsActive()) {
+            m.setPowers(0.15, 0,0);
+        }
+        m.setPowers(0,0,0);
+
+        m.runToPositionMode();
+    }
+    private void observeColor() {
+        // > 35 = yellow, < 30 = black
+
+        moveCloseToMinerals();
+
+        if(colorLeft.red() > 35 && colorRight.red() > 35) pos = POSITION.CENTER;
+        if(colorLeft.red() < 30 && colorRight.red() > 35) pos = POSITION.LEFT;
+        if(colorLeft.red() > 35 && colorRight.red() < 30) pos = POSITION.RIGHT;
+
+        say(pos);
+
+        if(pos == POSITION.LEFT)  m.strafeLeftBlock(0.3, 0.35);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(-0.3, 0.35);
+
+        sleep(100);
+
+        c.collect();
+        m.fwdBlocks(1.5,0.3);
+        if(pos == POSITION.LEFT) m.strafeLeftBlock(-0.3, 0.35);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(0.3, 0.35);
+
+        c.stop();
+        l.closeClaw();
+    }
+
+    private void fwdToPlatform() {
+        m.setPowers(-0.3,0,0);
+        sleep(500);
+        pf.lowerHooks();
+        sleep(500);
+        m.zeroMotors();
+    }
+    private void deliverBlock() {
+        l.liftArms();
+        l.extendArm();
+        sleep(500);
+        l.retractArm();
+        l.lowerArms();
+    }
+
+    private void platformArc() {
+        m.fwdBlocks(1,0.5);
+        sleep(500);
+
+        m.setPowers(0.2, 0.2 * colorCoef,0.2 * colorCoef);
+        sleep(2300);
+        m.zeroMotors();
+
+        m.setPowers(-0.5,0,0);
+        sleep(1100);
+        pf.liftHooks();
+
+        m.zeroMotors();
+    }
 
 }
