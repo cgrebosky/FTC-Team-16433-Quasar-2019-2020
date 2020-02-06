@@ -95,6 +95,7 @@ public class Lift extends SubSystem {
 
     boolean prevLeftBumper = true;
     boolean clawIsClosed = false;
+
     private void controlClaw() {
         clawIsOut = GamepadState.toggle(gamepad2.right_bumper, prevRightBumper, clawIsOut);
         prevRightBumper = gamepad2.right_bumper;
@@ -104,22 +105,24 @@ public class Lift extends SubSystem {
         clawIsClosed = GamepadState.toggle(gamepad2.left_bumper, prevLeftBumper, clawIsClosed);
         prevLeftBumper = gamepad2.left_bumper;
         if(clawIsClosed) {
-            clawLeft.setPosition(clawLeftClosed);
-            clawRight.setPosition(clawRightClosed);
+            closeClaw();
         } else {
-            clawLeft.setPosition(clawLeftOpen);
-            clawRight.setPosition(clawRightOpen);
+            openClaw();
         }
     }
     public void closeClaw() {
         clawLeft.setPosition(clawLeftClosed);
         clawRight.setPosition(clawRightClosed);
     }
-    public void extendArm() {
+    public void openClaw() {
+        clawLeft.setPosition(clawLeftOpen);
+        clawRight.setPosition(clawRightOpen);
+    }
+    @Auto public void extendArm() {
         extenderLeft.setPower(0.5);
         extenderRight.setPower(0.5);
         try {
-            sleep(500);
+            sleep(1500);
         } catch (InterruptedException e) {
             //Get SWALLOWED e
         }
@@ -127,5 +130,56 @@ public class Lift extends SubSystem {
         extenderLeft.setPower(0);
         extenderRight.setPower(0);
         clawAngle.setPosition(angleOut);
+
+        try {
+            sleep(500);
+        } catch (InterruptedException e) { }
+
+        openClaw();
+
+    }
+    @Auto public void retractArm() {
+        clawAngle.setPosition(angleIn);
+        closeClaw();
+
+        try {
+            sleep(300);
+        } catch (InterruptedException e) {
+            //Get SWALLOWED e
+        }
+
+        extenderLeft.setPower(-0.5);
+        extenderRight.setPower(-0.5);
+
+        try {
+            sleep(1500);
+        } catch (InterruptedException e) { }
+
+        extenderLeft.setPower(0);
+        extenderRight.setPower(0);
+    }
+    @Auto public void liftArms() {
+        liftLeft.setPower(-0.5);
+        liftRight.setPower(-0.5);
+        try {
+            sleep(700);
+        } catch (InterruptedException e) {
+
+        }
+
+        liftLeft.setPower(0);
+        liftRight.setPower(0);
+    }
+    @Auto public void lowerArms() {
+        liftLeft.setPower(0.5);
+        liftRight.setPower(0.5);
+        try {
+            sleep(800);
+        } catch (InterruptedException e) {
+
+        }
+
+        liftLeft.setPower(0);
+        liftRight.setPower(0);
     }
 }
