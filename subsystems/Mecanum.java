@@ -164,6 +164,12 @@ public class Mecanum extends SubSystem {
         fwd = -scaleControls(gamepad1.left_stick_y);
         rot = scaleControls(gamepad1.right_stick_x);
 
+        if(gamepad1.right_bumper) {
+            left *= 0.3;
+            fwd *= 0.3;
+            rot *= 0.3;
+        }
+
         left = (Math.abs(left)<THRESHOLD)?0:left;
         fwd = (Math.abs(fwd)<THRESHOLD)?0:fwd;
         rot = (Math.abs(rot)<THRESHOLD)?0:rot;

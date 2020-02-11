@@ -46,7 +46,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
 
         observeColor();
 
-        m.fwdBlocks(-1.8, 0.7);
+        m.fwdBlocks(-1.65, 0.7);
         m.turnGlobalDegrees(90 * colorCoef);
         m.fwdBlocks(-4, 0.7);
         m.turnGlobalDegrees(180 * colorCoef);
@@ -176,7 +176,9 @@ public class QuasarAuto1BFP extends LinearOpMode {
     private void deliverBlock() {
         l.liftArms();
         l.extendArm();
-        sleep(500);
+        l.openClaw();
+        l.liftArms();
+        l.closeClaw();
         l.retractArm();
         l.lowerArms();
     }

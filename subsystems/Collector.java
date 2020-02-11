@@ -40,7 +40,7 @@ public class Collector extends SubSystem {
         left.setPower(power * LEFT_COEF);
         right.setPower(power);
 
-        if(gamepad1.x) {
+        if(gamepad1.left_bumper) {
             open();
         } else {
             halfClose();

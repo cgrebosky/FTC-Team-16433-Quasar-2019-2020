@@ -13,7 +13,7 @@ import static java.lang.Thread.sleep;
 
 public class Lift extends SubSystem {
 
-    final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.14, angleIn = 0, angleOut = 1;
+    final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.1, angleIn = 0.08, angleOut = 1;
 
     public DcMotor liftLeft, liftRight;
     public CRServo extenderLeft, extenderRight;
@@ -122,38 +122,29 @@ public class Lift extends SubSystem {
         extenderLeft.setPower(0.5);
         extenderRight.setPower(0.5);
         try {
-            sleep(1500);
+            sleep(1300);
         } catch (InterruptedException e) {
-            //Get SWALLOWED e
+            extenderLeft.setPower(0);
+            extenderRight.setPower(0);
         }
 
         extenderLeft.setPower(0);
         extenderRight.setPower(0);
         clawAngle.setPosition(angleOut);
 
-        try {
-            sleep(500);
-        } catch (InterruptedException e) { }
-
-        openClaw();
-
     }
     @Auto public void retractArm() {
         clawAngle.setPosition(angleIn);
-        closeClaw();
-
-        try {
-            sleep(300);
-        } catch (InterruptedException e) {
-            //Get SWALLOWED e
-        }
 
         extenderLeft.setPower(-0.5);
         extenderRight.setPower(-0.5);
 
         try {
-            sleep(1500);
-        } catch (InterruptedException e) { }
+            sleep(1300);
+        } catch (InterruptedException e) {
+            extenderLeft.setPower(0);
+            extenderRight.setPower(0);
+        }
 
         extenderLeft.setPower(0);
         extenderRight.setPower(0);
@@ -162,9 +153,10 @@ public class Lift extends SubSystem {
         liftLeft.setPower(-0.5);
         liftRight.setPower(-0.5);
         try {
-            sleep(700);
+            sleep(400);
         } catch (InterruptedException e) {
-
+            liftLeft.setPower(0);
+            liftRight.setPower(0);
         }
 
         liftLeft.setPower(0);
@@ -176,7 +168,8 @@ public class Lift extends SubSystem {
         try {
             sleep(800);
         } catch (InterruptedException e) {
-
+            liftLeft.setPower(0);
+            liftRight.setPower(0);
         }
 
         liftLeft.setPower(0);
