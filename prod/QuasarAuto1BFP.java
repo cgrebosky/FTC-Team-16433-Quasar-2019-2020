@@ -42,18 +42,28 @@ public class QuasarAuto1BFP extends LinearOpMode {
         c.open();
         m.fwdBlocks(1, 0.5);
 
-        m.strafeLeftBlock(-0.22 * colorCoef,0.35);
+        m.strafeLeftBlock(-0.22 * colorCoef,0.5);
+
+        checkIfCanceled();
 
         observeColor();
+
+        checkIfCanceled();
 
         m.fwdBlocks(-1.65, 0.7);
         m.turnGlobalDegrees(90 * colorCoef);
         m.fwdBlocks(-4, 0.7);
         m.turnGlobalDegrees(180 * colorCoef);
 
+        checkIfCanceled();
+
         fwdToPlatform();
 
+        checkIfCanceled();
+
         deliverBlock();
+
+        checkIfCanceled();
 
         platformArc();
 
@@ -135,7 +145,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
 
         long timeOut = System.currentTimeMillis() + 3000;
         while(distance.getDistance(DistanceUnit.CM) > 6 && System.currentTimeMillis() < timeOut && opModeIsActive()) {
-            m.setPowers(0.15, 0,0);
+            m.setPowers(0.3, 0,0);
         }
         m.setPowers(0,0,0);
 
@@ -152,15 +162,15 @@ public class QuasarAuto1BFP extends LinearOpMode {
 
         say(pos);
 
-        if(pos == POSITION.LEFT)  m.strafeLeftBlock(0.3, 0.35);
-        if(pos == POSITION.RIGHT) m.strafeLeftBlock(-0.3, 0.35);
+        if(pos == POSITION.LEFT)  m.strafeLeftBlock(0.3, 0.5);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(-0.3, 0.5);
 
         sleep(100);
 
         c.collect();
         m.fwdBlocks(1.5,0.3);
-        if(pos == POSITION.LEFT) m.strafeLeftBlock(-0.3, 0.35);
-        if(pos == POSITION.RIGHT) m.strafeLeftBlock(0.3, 0.35);
+        if(pos == POSITION.LEFT) m.strafeLeftBlock(-0.3, 0.5);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(0.3, 0.5);
 
         c.stop();
         l.closeClaw();
@@ -176,6 +186,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
     private void deliverBlock() {
         l.liftArms();
         l.extendArm();
+        sleep(200);
         l.openClaw();
         l.liftArms();
         l.closeClaw();

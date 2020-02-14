@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
 import quasar.lib.SubSystem;
+import quasar.prod.QuasarAuto1BFP;
 
 import static java.lang.Thread.sleep;
 
@@ -86,6 +87,9 @@ public class Lift extends SubSystem {
     }
     private void controlArms() {
         double pwr = -gamepad2.left_stick_y;
+        pwr = Math.min(0.9, pwr);
+        pwr = Math.max(-0.9, pwr); //clip to [-0.9,0.9]
+
         extenderLeft.setPower(pwr);
         extenderRight.setPower(pwr);
     }
@@ -119,10 +123,10 @@ public class Lift extends SubSystem {
         clawRight.setPosition(clawRightOpen);
     }
     @Auto public void extendArm() {
-        extenderLeft.setPower(0.5);
-        extenderRight.setPower(0.5);
+        extenderLeft.setPower(0.9);
+        extenderRight.setPower(0.9);
         try {
-            sleep(1300);
+            sleep(1600);
         } catch (InterruptedException e) {
             extenderLeft.setPower(0);
             extenderRight.setPower(0);
@@ -135,12 +139,17 @@ public class Lift extends SubSystem {
     }
     @Auto public void retractArm() {
         clawAngle.setPosition(angleIn);
+        try {
+            sleep(300);
+        } catch (InterruptedException e) {
 
-        extenderLeft.setPower(-0.5);
-        extenderRight.setPower(-0.5);
+        }
+
+        extenderLeft.setPower(-0.9);
+        extenderRight.setPower(-0.9);
 
         try {
-            sleep(1300);
+            sleep(1700);
         } catch (InterruptedException e) {
             extenderLeft.setPower(0);
             extenderRight.setPower(0);

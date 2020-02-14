@@ -12,7 +12,7 @@ public class Collector extends SubSystem {
 
     private final double LEFT_COEF = 1; //This makes 1 wheel go a bit slower, allowing us to collect
                                            //blocks against the wall (in theory :( )
-    Servo limiterLeft, limiterRight;
+    public Servo limiterLeft, limiterRight;
 
     private final double LEFT_IN = 0, LEFT_OUT = 1, LEFT_HALF = 0.77, RIGHT_IN = 1, RIGHT_OUT = 0, RIGHT_HALF = 0.4;
 
