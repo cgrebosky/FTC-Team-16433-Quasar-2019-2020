@@ -114,6 +114,8 @@ open class MacroPlayer: LinearOpMode() {
 
         co.left.power = m.colLeftPow
         co.right.power = m.colRightPow
+        co.limiterLeft.position = m.leftLim
+        co.limiterRight.position = m.rightLim
 
         li.liftLeft.power = m.liftPow
         li.liftRight.power = m.liftPow

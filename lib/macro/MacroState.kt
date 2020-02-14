@@ -22,6 +22,8 @@ data class MacroState(var time: Long): Serializable {
     //Collector
     var colLeftPow = 0.0
     var colRightPow = 0.0
+    var leftLim = 0.0
+    var rightLim = 0.0
     //Lift
     var liftPow = 0.0
     var extenderPow = 0.0

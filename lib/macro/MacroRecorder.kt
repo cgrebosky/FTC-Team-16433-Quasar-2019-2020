@@ -131,6 +131,8 @@ class MacroRecorder: OpMode() {
 
         m.colLeftPow = co.left.power
         m.colRightPow = co.right.power
+        m.leftLim = co.limiterLeft.position
+        m.rightLim = co.limiterRight.position
 
         m.liftPow = li.liftLeft.power
         m.extenderPow = li.extenderLeft.power
