@@ -52,22 +52,6 @@ public class Mecanum extends SubSystem {
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode                = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled      = false;
-
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-
-        imu.initialize(parameters);
-
-        startDegrees = imu.getAngularOrientation().firstAngle;
-
         opm.telemetry.addLine("Mecanum ready");
     }
     @Override public void autoInit() {
@@ -132,9 +116,6 @@ public class Mecanum extends SubSystem {
         opm.telemetry.addData("    Left", left);
         opm.telemetry.addData("    Rotation", rot);
         opm.telemetry.addLine();
-        opm.telemetry.addData("    X (Active)", imu.getAngularOrientation().firstAngle);
-        opm.telemetry.addData("    Y", imu.getAngularOrientation().secondAngle);
-        opm.telemetry.addData("    Z", imu.getAngularOrientation().thirdAngle);
     }
     //endregion SubSystem
     //region Mecanum
@@ -160,14 +141,14 @@ public class Mecanum extends SubSystem {
         powers = MoreMath.listAdd(powers, MoreMath.listMultiply(rotation, TURN));
     }
     @Tele private void zeroControls() {
-        left = scaleControls(gamepad1.left_stick_x);
-        fwd = -scaleControls(gamepad1.left_stick_y);
-        rot = scaleControls(gamepad1.right_stick_x);
-
         if(gamepad1.right_bumper) {
-            left *= 0.3;
-            fwd *= 0.3;
-            rot *= 0.3;
+            left = (gamepad1.left_stick_x) * 0.4;
+            fwd = -(gamepad1.left_stick_y) * 0.4;
+            rot = (gamepad1.right_stick_x) * 0.4;
+        } else {
+            left = (gamepad1.left_stick_x);
+            fwd = -(gamepad1.left_stick_y);
+            rot = (gamepad1.right_stick_x);
         }
 
         left = (Math.abs(left)<THRESHOLD)?0:left;

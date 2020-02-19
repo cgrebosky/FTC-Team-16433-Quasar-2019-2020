@@ -14,7 +14,7 @@ import static java.lang.Thread.sleep;
 
 public class Lift extends SubSystem {
 
-    final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.1, angleIn = 0.08, angleOut = 1;
+    final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.1, angleIn = 0.23, angleOut = 1;
 
     public DcMotor liftLeft, liftRight;
     public CRServo extenderLeft, extenderRight;

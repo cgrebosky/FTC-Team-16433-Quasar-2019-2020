@@ -42,7 +42,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
         c.open();
         m.fwdBlocks(1, 0.5);
 
-        m.strafeLeftBlock(-0.22 * colorCoef,0.5);
+        m.strafeLeftBlock(-0.25 * colorCoef,0.4);
 
         checkIfCanceled();
 
@@ -50,7 +50,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
 
         checkIfCanceled();
 
-        m.fwdBlocks(-1.65, 0.7);
+        m.fwdBlocks(-1.78, 0.7);
         m.turnGlobalDegrees(90 * colorCoef);
         m.fwdBlocks(-4, 0.7);
         m.turnGlobalDegrees(180 * colorCoef);
@@ -144,7 +144,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
         m.encoderMode();
 
         long timeOut = System.currentTimeMillis() + 3000;
-        while(distance.getDistance(DistanceUnit.CM) > 6 && System.currentTimeMillis() < timeOut && opModeIsActive()) {
+        while(distance.getDistance(DistanceUnit.CM) > 7 && System.currentTimeMillis() < timeOut && opModeIsActive()) {
             m.setPowers(0.3, 0,0);
         }
         m.setPowers(0,0,0);
@@ -162,22 +162,22 @@ public class QuasarAuto1BFP extends LinearOpMode {
 
         say(pos);
 
-        if(pos == POSITION.LEFT)  m.strafeLeftBlock(0.3, 0.5);
-        if(pos == POSITION.RIGHT) m.strafeLeftBlock(-0.3, 0.5);
+        if(pos == POSITION.LEFT)  m.strafeLeftBlock(0.35, 0.4);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(-0.35, 0.4);
 
         sleep(100);
 
         c.collect();
         m.fwdBlocks(1.5,0.3);
-        if(pos == POSITION.LEFT) m.strafeLeftBlock(-0.3, 0.5);
-        if(pos == POSITION.RIGHT) m.strafeLeftBlock(0.3, 0.5);
+        if(pos == POSITION.LEFT) m.strafeLeftBlock(-0.3, 0.4);
+        if(pos == POSITION.RIGHT) m.strafeLeftBlock(0.3, 0.4);
 
         c.stop();
         l.closeClaw();
     }
 
     private void fwdToPlatform() {
-        m.setPowers(-0.3,0,0);
+        m.setPowers(-0.35,0,0);
         sleep(500);
         pf.lowerHooks();
         sleep(500);
@@ -195,7 +195,7 @@ public class QuasarAuto1BFP extends LinearOpMode {
     }
 
     private void platformArc() {
-        m.fwdBlocks(1,0.5);
+        m.fwdBlocks(1.2,0.5);
         sleep(500);
 
         m.setPowers(0.2, 0.2 * colorCoef,0.2 * colorCoef);
