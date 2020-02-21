@@ -1,11 +1,13 @@
 package quasar.tools;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "Motor Tester", group = "Tools")
+@Disabled
 public class MotorTester extends OpMode {
 
     private DcMotor motor, rightArm;

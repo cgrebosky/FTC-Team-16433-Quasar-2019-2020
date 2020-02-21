@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
 import quasar.lib.SubSystem;
-import quasar.prod.QuasarAuto1BFP;
 
 import static java.lang.Thread.sleep;
 

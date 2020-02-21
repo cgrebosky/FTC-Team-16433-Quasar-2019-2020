@@ -1,5 +1,6 @@
 package quasar.tools;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
 
 @TeleOp(name = "Color Sensor tester")
+@Disabled
 public class ColorSensorTester extends OpMode {
 
     ColorSensor left, right;
