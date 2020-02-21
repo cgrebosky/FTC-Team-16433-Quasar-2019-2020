@@ -14,13 +14,13 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
     private class EncoderPosition {
         int fl, fr, bl, br;
 
-        public EncoderPosition(int fl, int fr, int bl, int br) {
+        EncoderPosition(int fl, int fr, int bl, int br) {
             this.fl = fl;
             this.fr = fr;
             this.bl = bl;
             this.br = br;
         }
-        public EncoderPosition() {
+        EncoderPosition() {
             this.fl = Mecanum.this.fl.getCurrentPosition();
             this.fr = Mecanum.this.fr.getCurrentPosition();
             this.bl = Mecanum.this.bl.getCurrentPosition();
@@ -155,7 +155,7 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
         setMotorPowers();
     }
 
-    @Auto public void goToPositionVuforia(double endX, double endY, IMUHandler i, PositionDetector pd) {
+    @Auto public void goToPositionVuforia(double endX, double endY, IMUHandler i, VuforiaPositionDetector pd) {
         double startAngle = i.getAbsoluteHeading();
 
         while(lop.opModeIsActive() && pd.imageIsVisible()) {

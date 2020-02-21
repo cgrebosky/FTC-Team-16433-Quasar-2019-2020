@@ -11,13 +11,13 @@ import quasar.threadsubsystems.PlatformMover;
 @TeleOp(name = "Quasar TeleOp Threaded", group = "Prod")
 public final class QuasarTeleOpThread extends LinearOpMode {
 
-    Collector c      = new Collector();
-    PlatformMover pf = new PlatformMover();
-    Lift l           = new Lift();
-    Mecanum m        = new Mecanum();
+    private Collector c      = new Collector();
+    private PlatformMover pf = new PlatformMover();
+    private Lift l           = new Lift();
+    private Mecanum m        = new Mecanum();
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         c.create(this, false);
         c.disableTelemetry();
         c.start();
@@ -35,6 +35,6 @@ public final class QuasarTeleOpThread extends LinearOpMode {
 
         waitForStart();
 
-        while(opModeIsActive());
+        while(opModeIsActive()) idle();
     }
 }

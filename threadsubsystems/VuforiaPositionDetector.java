@@ -27,7 +27,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
 
-final public class PositionDetector extends ThreadSubSystem {
+final public class VuforiaPositionDetector extends ThreadSubSystem {
 
     private double x = 0, y = 0, heading = 0;             //This is the current position
     private double lastX = 0, lastY = 0, lastHeading = 0; //This is the last position at which we could see images
@@ -62,13 +62,13 @@ final public class PositionDetector extends ThreadSubSystem {
         telemetry.addData("    Heading", heading);
         telemetry.addData("    Target Visible", targetVisible);
         telemetry.addData("    Cycle Time", getCycleTime());
-        telemetry.addData("    Hz", 1000 / (double) getCycleTime());
+        telemetry.addData("    Hz", 1000 / getCycleTime());
         telemetry.update();
     }
     //endregion SubSystem
     //region Vuforia
     private VuforiaTrackables targetsSkyStone;
-    private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+    private List<VuforiaTrackable> allTrackables = new ArrayList<>();
 
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = FRONT;
     private static final boolean PHONE_IS_PORTRAIT = false;
@@ -103,7 +103,7 @@ final public class PositionDetector extends ThreadSubSystem {
 
 
 
-    public synchronized void startEngine() {
+    private void startEngine() {
 
         int cameraMonitorViewId = lop.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", lop.hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
