@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Collector Position Tester", group = "Testing")
+@TeleOp(name = "Collector Position Tester", group = "Tools")
 @Disabled
-public class ServoCollectorPositionTester extends OpMode {
+public class ServoCollectorPositionTool extends OpMode {
 
     Servo limitLeft, limitRight;
 
