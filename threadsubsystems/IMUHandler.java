@@ -9,7 +9,7 @@ public final class IMUHandler extends ThreadSubSystem {
     private double heading = 0;
     private double startHeading = 0;
 
-    BNO055IMU imu;
+    private BNO055IMU imu;
 
     //region SubSystem
     @Override

@@ -8,8 +8,8 @@ import quasar.lib.ThreadSubSystem;
 import quasar.lib.macro.MacroSystem;
 
 public final class Collector extends ThreadSubSystem implements MacroSystem {
-    public DcMotor collectorLeft, collectorRight;
-    public Servo limiterLeft, limiterRight;
+    private DcMotor collectorLeft, collectorRight;
+    private Servo limiterLeft, limiterRight;
 
     private final double LEFT_IN = 0, LEFT_OPEN = 1, LEFT_HALF = 0.77, RIGHT_IN = 1, RIGHT_OPEN = 0, RIGHT_HALF = 0.4;
 
@@ -59,15 +59,15 @@ public final class Collector extends ThreadSubSystem implements MacroSystem {
     }
     //endregion
 
-    public synchronized void open() {
+    private void open() {
         limiterLeft.setPosition(LEFT_OPEN);
         limiterRight.setPosition(RIGHT_OPEN);
     }
-    public synchronized void close() {
+    private void close() {
         limiterLeft.setPosition(LEFT_IN);
         limiterRight.setPosition(RIGHT_IN);
     }
-    public synchronized void half() {
+    private void half() {
         limiterLeft.setPosition(LEFT_HALF);
         limiterRight.setPosition(RIGHT_HALF);
     }

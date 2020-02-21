@@ -12,7 +12,7 @@ import quasar.lib.macro.MacroSystem;
 
 public final class Lift extends ThreadSubSystem implements MacroSystem {
 
-    private final double clawLeftClosed = 0.67, clawLeftOpen = 0.44, clawRightClosed = 0.3, clawRightOpen = 0.1, angleIn = 0.23, angleOut = 1;
+    private final double CLAW_LEFT_CLOSED = 0.67, CLAW_LEFT_OPEN = 0.44, CLAW_RIGHT_CLOSED = 0.3, CLAW_RIGHT_OPEN = 0.1, ANGLE_IN = 0.23, ANGLE_OUT = 1;
 
     private DcMotor liftLeft, liftRight;
     private CRServo extenderLeft, extenderRight;
@@ -40,9 +40,9 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
         clawLeft = hmap.servo.get("clawLeft");
         clawRight = hmap.servo.get("clawRight");
         clawAngle = hmap.servo.get("clawAngle");
-        clawLeft.setPosition(clawLeftOpen);
-        clawRight.setPosition(clawRightOpen);
-        clawAngle.setPosition(angleIn);
+        clawLeft.setPosition(CLAW_LEFT_OPEN);
+        clawRight.setPosition(CLAW_RIGHT_OPEN);
+        clawAngle.setPosition(ANGLE_IN);
 
         limitLeft = hmap.get(DigitalChannel.class, "liftLimitLeft");
         limitRight = hmap.get(DigitalChannel.class, "liftLimitRight");
@@ -73,8 +73,8 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
         telemetry.addData("    Limits Triggered", !limitLeft.getState() || !limitRight.getState());
         telemetry.addData("    Lift Power", liftLeft.getPower());
         telemetry.addLine();
-        telemetry.addData("    Claw State", clawLeft.getPosition() == clawLeftClosed?"CLOSED":"OPEN");
-        telemetry.addData("    Claw Angle", clawAngle.getPosition() == angleOut?"OUT":"IN");
+        telemetry.addData("    Claw State", clawLeft.getPosition() == CLAW_LEFT_CLOSED ?"CLOSED":"OPEN");
+        telemetry.addData("    Claw Angle", clawAngle.getPosition() == ANGLE_OUT ?"OUT":"IN");
         telemetry.addData("    Arm Power", extenderLeft.getPower());
     }
     //endregion
@@ -89,23 +89,23 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
         if(angleIsOut) angleClawOut();
         else           angleClawIn();
     }
-    public synchronized void openClaw() {
+    private void openClaw() {
         clawIsOpen = true;
-        clawLeft.setPosition(clawLeftOpen);
-        clawRight.setPosition(clawRightOpen);
+        clawLeft.setPosition(CLAW_LEFT_OPEN);
+        clawRight.setPosition(CLAW_RIGHT_OPEN);
     }
-    public synchronized void closeClaw() {
+    private void closeClaw() {
         clawIsOpen = false;
-        clawLeft.setPosition(clawLeftClosed);
-        clawRight.setPosition(clawRightClosed);
+        clawLeft.setPosition(CLAW_LEFT_CLOSED);
+        clawRight.setPosition(CLAW_RIGHT_CLOSED);
     }
-    public synchronized void angleClawOut() {
+    private void angleClawOut() {
         clawIsOpen = true;
-        clawAngle.setPosition(angleOut);
+        clawAngle.setPosition(ANGLE_OUT);
     }
-    public synchronized void angleClawIn() {
+    private void angleClawIn() {
         clawIsOpen = false;
-        clawAngle.setPosition(angleIn);
+        clawAngle.setPosition(ANGLE_IN);
     }
 
     private void controlExtender() {

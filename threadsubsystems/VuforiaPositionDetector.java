@@ -1,11 +1,5 @@
 package quasar.threadsubsystems;
 
-import android.graphics.Point;
-import android.net.wifi.aware.SubscribeConfig;
-
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -31,8 +25,6 @@ final public class VuforiaPositionDetector extends ThreadSubSystem {
 
     private double x = 0, y = 0, heading = 0;             //This is the current position
     private double lastX = 0, lastY = 0, lastHeading = 0; //This is the last position at which we could see images
-
-    private double startDeg = 0;
 
     //1 Block is 60 cm = 600 mm
     //Clockwise from top is - for IMU
@@ -154,7 +146,7 @@ final public class VuforiaPositionDetector extends ThreadSubSystem {
 
         allTrackables.addAll(targetsSkyStone);
 
-        /**
+        /*
          * In order for localization to work, we need to tell the system where each target is on the field, and
          * where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
          * Transformation matrices are a central, important concept in the math here involved in localization.
@@ -319,9 +311,6 @@ final public class VuforiaPositionDetector extends ThreadSubSystem {
     }
     public synchronized double getY() {
         return y;
-    }
-    public synchronized VuforiaLocalizer getEngine() {
-        return vuforia;
     }
     public synchronized boolean imageIsVisible() {
         return targetVisible;

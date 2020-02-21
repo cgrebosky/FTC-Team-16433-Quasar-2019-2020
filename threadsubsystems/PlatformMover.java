@@ -44,12 +44,12 @@ public final class PlatformMover extends ThreadSubSystem implements MacroSystem 
     }
     //endregion
 
-    public synchronized void lowerHooks() {
+    private void lowerHooks() {
         isDown = true;
         platformLeft.setPosition(LEFT_DOWN);
         platformRight.setPosition(RIGHT_DOWN);
     }
-    public synchronized void raiseHooks() {
+    private void raiseHooks() {
         isDown = false;
         platformLeft.setPosition(LEFT_UP);
         platformRight.setPosition(RIGHT_UP);
