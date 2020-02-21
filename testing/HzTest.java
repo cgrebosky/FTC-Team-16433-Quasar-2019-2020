@@ -3,8 +3,6 @@ package quasar.testing;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import quasar.lib.SubSystem;
-
 @TeleOp(name = "HzTesting", group = "Testing")
 public final class HzTest extends OpMode {
 

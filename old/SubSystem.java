@@ -1,4 +1,4 @@
-package quasar.lib;
+package quasar.old;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -10,6 +10,8 @@ import org.firstinspires.ftc.robotcontroller.external.samples.ConceptNullOp;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import quasar.lib.GamepadState;
 
 abstract public class SubSystem {
     //Injected properties from constructor called in main method.

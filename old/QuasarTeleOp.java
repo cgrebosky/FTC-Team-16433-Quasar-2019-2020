@@ -1,14 +1,16 @@
-package quasar.prod;
+package quasar.old;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import quasar.subsystems.Collector;
-import quasar.subsystems.Lift;
-import quasar.subsystems.Mecanum;
-import quasar.subsystems.PlatformMover;
+import quasar.old.subsystems.Collector;
+import quasar.old.subsystems.Lift;
+import quasar.old.subsystems.Mecanum;
+import quasar.old.subsystems.PlatformMover;
 
 @TeleOp(name = "Quasar TeleOp", group = "Production")
+@Disabled
 public class QuasarTeleOp extends OpMode {
 
     Mecanum m = new Mecanum();

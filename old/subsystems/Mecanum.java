@@ -1,11 +1,11 @@
-package quasar.subsystems;
+package quasar.old.subsystems;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.MoreMath;
-import quasar.lib.SubSystem;
+import quasar.old.SubSystem;
 
 import static java.lang.Thread.sleep;
 

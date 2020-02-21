@@ -1,15 +1,15 @@
-package quasar.lib.macro
+package quasar.old.macro
 
-import quasar.lib.macro.MacroState.Companion.filename
-import quasar.lib.macro.MacroState.Companion.path
+import quasar.old.macro.MacroState.Companion.filename
+import quasar.old.macro.MacroState.Companion.path
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
-import quasar.subsystems.Collector
-import quasar.subsystems.Lift
-import quasar.subsystems.Mecanum
-import quasar.subsystems.PlatformMover
+import quasar.old.subsystems.Collector
+import quasar.old.subsystems.Lift
+import quasar.old.subsystems.Mecanum
+import quasar.old.subsystems.PlatformMover
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream

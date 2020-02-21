@@ -1,9 +1,9 @@
-package quasar.subsystems;
+package quasar.old.subsystems;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
-import quasar.lib.SubSystem;
+import quasar.old.SubSystem;
 
 public class PlatformMover extends SubSystem {
 

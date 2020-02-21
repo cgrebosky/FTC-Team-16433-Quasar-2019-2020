@@ -28,8 +28,6 @@ public final class Autonomous3B extends LinearOpMode {
 
         waitForStart();
 
-        goToPositionVuforia(300,800);
-
     }
 
 

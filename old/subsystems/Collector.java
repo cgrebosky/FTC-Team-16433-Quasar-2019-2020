@@ -1,10 +1,10 @@
-package quasar.subsystems;
+package quasar.old.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import quasar.lib.SubSystem;
+import quasar.old.SubSystem;
 
 public class Collector extends SubSystem {
 

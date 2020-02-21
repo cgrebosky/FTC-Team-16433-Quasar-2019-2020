@@ -1,4 +1,4 @@
-package quasar.subsystems;
+package quasar.old.subsystems;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
-import quasar.lib.SubSystem;
+import quasar.old.SubSystem;
 
 import static java.lang.Thread.sleep;
 
