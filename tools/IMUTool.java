@@ -1,4 +1,4 @@
-package quasar.testing;
+package quasar.tools;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 @TeleOp(name = "IMU Testing", group = "Tests")
-public final class IMUTest extends OpMode {
+public final class IMUTool extends OpMode {
 
     private BNO055IMU imu;
     private double startDeg = 0;

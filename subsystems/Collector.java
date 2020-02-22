@@ -1,13 +1,14 @@
-package quasar.threadsubsystems;
+package quasar.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import quasar.lib.ThreadSubSystem;
+import quasar.lib.SubSystem;
+import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
-public final class Collector extends ThreadSubSystem implements MacroSystem {
+public final class Collector extends SubSystem implements MacroSystem {
     private DcMotor collectorLeft, collectorRight;
     private Servo limiterLeft, limiterRight;
 
@@ -15,7 +16,7 @@ public final class Collector extends ThreadSubSystem implements MacroSystem {
 
     //region SubSystem
     @Override
-    public void _init() {
+    public void init() {
         collectorLeft = hmap.dcMotor.get("collectorLeft");
         collectorRight = hmap.dcMotor.get("collectorRight");
 
@@ -28,26 +29,30 @@ public final class Collector extends ThreadSubSystem implements MacroSystem {
 
         limiterLeft = hmap.servo.get("limiterLeft");
         limiterRight = hmap.servo.get("limiterRight");
+
+        close();
     }
 
     @Override
-    public void _loop() {
+    public void loop() {
         double pwr = gamepad1.left_trigger - gamepad1.right_trigger;
         collectorLeft.setPower(pwr);
         collectorRight.setPower(pwr);
 
         if(gamepad1.left_bumper) open();
         else half();
+
+        postLoop();
     }
 
     @Override
-    public void _stop() {
+    public void stop() {
         collectorLeft.setPower(0);
         collectorRight.setPower(0);
     }
 
     @Override
-    public void _telemetry() {
+    protected void telemetry() {
         telemetry.addLine("COLLECTOR");
 
         String pos = "?";
@@ -74,12 +79,20 @@ public final class Collector extends ThreadSubSystem implements MacroSystem {
 
     //region Macro
     @Override
-    public void setMacroState() {
+    public void recordMacroState() {
+        MacroState.Companion.getCurrentMacroState().setColLeftPow(collectorLeft.getPower());
+        MacroState.Companion.getCurrentMacroState().setColRightPow(collectorRight.getPower());
 
+        MacroState.Companion.getCurrentMacroState().setLeftLim(limiterLeft.getPosition());
+        MacroState.Companion.getCurrentMacroState().setRightLim(limiterRight.getPosition());
     }
     @Override
-    public void getMacroState() {
+    public void playMacroState(MacroState m) {
+        collectorLeft.setPower(m.getColLeftPow());
+        collectorRight.setPower(m.getColRightPow());
 
+        limiterLeft.setPosition(m.getLeftLim());
+        limiterRight.setPosition(m.getRightLim());
     }
     //endregion
 

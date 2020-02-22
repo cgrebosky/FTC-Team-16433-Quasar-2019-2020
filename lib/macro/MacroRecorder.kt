@@ -1,15 +1,16 @@
-package quasar.old.macro
+package quasar.lib.macro
 
-import quasar.old.macro.MacroState.Companion.filename
-import quasar.old.macro.MacroState.Companion.path
+import quasar.lib.macro.MacroState.Companion.filename
+import quasar.lib.macro.MacroState.Companion.path
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
-import quasar.old.subsystems.Collector
-import quasar.old.subsystems.Lift
-import quasar.old.subsystems.Mecanum
-import quasar.old.subsystems.PlatformMover
+import quasar.lib.macro.MacroState.Companion.currentMacroState
+import quasar.subsystems.Collector
+import quasar.subsystems.Lift
+import quasar.subsystems.Mecanum
+import quasar.subsystems.PlatformMover
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
@@ -37,7 +38,6 @@ class MacroRecorder: OpMode() {
         //region INIT CODE HERE
         me.create(this)
         me.init()
-        me.useCompBotConfig()
 
         pf.create(this)
         pf.init()
@@ -80,12 +80,13 @@ class MacroRecorder: OpMode() {
         co.loop()
         li.loop()
         //endregion
+        recordData()
 
         if(state == State.UNINITIALIZED && gamepad1.a) state = State.RUNNING
         if(state == State.RUNNING && gamepad1.x) state = State.STOPPED
 
         if(state == State.RUNNING)
-            recording.add( createCurrentState() )
+            recording.add( currentMacroState )
         else if(state == State.STOPPED) {
             serializeData()
             stop()
@@ -118,27 +119,10 @@ class MacroRecorder: OpMode() {
 
         telemetry.update()
     }
-    fun createCurrentState(): MacroState {
-        val m = MacroState(System.currentTimeMillis())
-        //region RECORD STATE HERE
-        m.pfLeftPos = pf.left.position
-        m.pfRightPos = pf.right.position
-
-        m.flPow = me.fl.power
-        m.frPow = me.fr.power
-        m.blPow = me.bl.power
-        m.brPow = me.br.power
-
-        m.colLeftPow = co.left.power
-        m.colRightPow = co.right.power
-        m.leftLim = co.limiterLeft.position
-        m.rightLim = co.limiterRight.position
-
-        m.liftPow = li.liftLeft.power
-        m.extenderPow = li.extenderLeft.power
-        //m.grabberPos = li.grabber.power
-        //endregion
-
-        return m
+    fun recordData() {
+        me.recordMacroState()
+        pf.recordMacroState()
+        co.recordMacroState()
+        li.recordMacroState()
     }
 }

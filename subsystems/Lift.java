@@ -1,4 +1,4 @@
-package quasar.threadsubsystems;
+package quasar.subsystems;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,10 +7,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
+import quasar.lib.SubSystem;
 import quasar.lib.ThreadSubSystem;
+import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
-public final class Lift extends ThreadSubSystem implements MacroSystem {
+public final class Lift extends SubSystem implements MacroSystem {
 
     private final double CLAW_LEFT_CLOSED = 0.67, CLAW_LEFT_OPEN = 0.44, CLAW_RIGHT_CLOSED = 0.3, CLAW_RIGHT_OPEN = 0.1, ANGLE_IN = 0.23, ANGLE_OUT = 1;
 
@@ -24,7 +26,7 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
 
     //region SubSystem
     @Override
-    protected void _init() {
+    public void init() {
         liftLeft = hmap.dcMotor.get("liftLeft");
         liftRight = hmap.dcMotor.get("liftRight");
         liftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -52,14 +54,16 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
     }
 
     @Override
-    protected void _loop() {
+    public void loop() {
         controlClaw();
         controlLift();
         controlExtender();
+
+        postLoop();
     }
 
     @Override
-    protected void _stop() {
+    public void stop() {
         liftLeft.setPower(0);
         liftRight.setPower(0);
         extenderLeft.setPower(0);
@@ -67,7 +71,7 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
     }
 
     @Override
-    protected void _telemetry() {
+    protected void telemetry() {
         telemetry.addLine("LIFT");
         telemetry.addData("    Lift Position", liftLeft.getCurrentPosition());
         telemetry.addData("    Limits Triggered", !limitLeft.getState() || !limitRight.getState());
@@ -127,13 +131,22 @@ public final class Lift extends ThreadSubSystem implements MacroSystem {
 
     //region Macro
     @Override
-    public void setMacroState() {
+    public void recordMacroState() {
+        MacroState.Companion.getCurrentMacroState().setLiftPow(liftLeft.getPower());
+        MacroState.Companion.getCurrentMacroState().setExtenderPow(extenderLeft.getPower());
 
+        MacroState.Companion.getCurrentMacroState().setGrabberPos(clawLeft.getPosition());
+        MacroState.Companion.getCurrentMacroState().setAnglePos(clawAngle.getPosition());
     }
 
     @Override
-    public void getMacroState() {
-
+    public void playMacroState(MacroState m) {
+        liftLeft.setPower(m.getLiftPow());
+        liftRight.setPower(m.getLiftPow());
+        extenderLeft.setPower(m.getExtenderPow());
+        extenderRight.setPower(m.getExtenderPow());
+        clawAngle.setPosition(m.getAnglePos());
+        clawLeft.setPosition(m.getGrabberPos());
     }
     //endregion
 }

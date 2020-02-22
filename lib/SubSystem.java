@@ -1,4 +1,4 @@
-package quasar.old;
+package quasar.lib;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptNullOp;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,7 +23,10 @@ abstract public class SubSystem {
     protected Gamepad gamepad1, gamepad2;
     protected GamepadState prev1 = new GamepadState(), prev2 = new GamepadState();
 
-    protected HardwareMap hardwareMap;
+    protected HardwareMap hmap;
+    protected Telemetry telemetry;
+
+    public boolean telemetryIsActive = true;
 
     //region Methods
     @Auto public void create(LinearOpMode lop) {
@@ -33,9 +37,10 @@ abstract public class SubSystem {
     @Tele public void create(OpMode opm) {
         this.opm = opm;
 
-        gamepad1 =    opm.gamepad1;
-        gamepad2 =    opm.gamepad2;
-        hardwareMap = opm.hardwareMap;
+        gamepad1  = opm.gamepad1;
+        gamepad2  = opm.gamepad2;
+        hmap      = opm.hardwareMap;
+        telemetry = opm.telemetry;
     }
 
     public boolean isAutonomous() {
@@ -52,7 +57,7 @@ abstract public class SubSystem {
      */
     @Tele public void postLoop() {
         updateGamepadStates();
-        telemetry();
+        if(telemetryIsActive) telemetry();
     }
     /**
      * This will update prevs, allowing for more advanced gamepad control.
@@ -65,7 +70,7 @@ abstract public class SubSystem {
     /**
      * Put all your telemetry code in here, it will be automatically called in postLoop() method.
      */
-    @Tele protected void telemetry() {}
+    @Tele protected abstract void telemetry();
 
     public abstract void stop();
 

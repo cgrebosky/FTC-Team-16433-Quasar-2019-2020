@@ -1,10 +1,10 @@
-package quasar.testing;
+package quasar.tools;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "HzTesting", group = "Testing")
-public final class HzTest extends OpMode {
+public final class HzTool extends OpMode {
 
     private long prevTime = 0, cycleTime = 0, Hz = 0;
 

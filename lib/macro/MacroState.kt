@@ -1,4 +1,4 @@
-package quasar.old.macro
+package quasar.lib.macro
 
 import android.os.Environment
 import java.io.Serializable
@@ -12,10 +12,10 @@ data class MacroState(var time: Long): Serializable {
 
     //region PUT MACRO STATE DATA HERE
     //Mecanum
-    var flPow = 0.0
-    var frPow = 0.0
-    var blPow = 0.0
-    var brPow = 0.0
+    var fl = 0.0
+    var fr = 0.0
+    var bl = 0.0
+    var br = 0.0
     //PlatformMover
     var pfLeftPos = 0.0
     var pfRightPos = 0.0
@@ -27,10 +27,13 @@ data class MacroState(var time: Long): Serializable {
     //Lift
     var liftPow = 0.0
     var extenderPow = 0.0
-    var grabberPos = 1.0
+    var grabberPos = 0.0
+    var anglePos = 0.0
     //endregion
 
     companion object {
+        val currentMacroState = MacroState(0);
+
         val potentialFileNames = arrayOf("MacroRecording (DEBUG - DO NOT USE)",
                 "RED Platform Mover",
                 "BLUE Platform Mover",

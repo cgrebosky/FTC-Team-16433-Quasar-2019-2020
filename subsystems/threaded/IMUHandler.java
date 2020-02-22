@@ -1,4 +1,4 @@
-package quasar.threadsubsystems;
+package quasar.subsystems.threaded;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
@@ -25,13 +25,12 @@ public final class IMUHandler extends ThreadSubSystem {
 
         imu.initialize(parameters);
 
-        startHeading = imu.getAngularOrientation().firstAngle + 180;
+        startHeading = imu.getAngularOrientation().firstAngle;
     }
 
     @Override
     protected void _loop() {
-        heading = imu.getAngularOrientation().firstAngle + 180; //The IMU gives us vaues in [-180, 180], so this converts
-                                                                //it to [0, 360] so it's slightly easier to work with.
+        heading = imu.getAngularOrientation().firstAngle;
     }
 
     @Override
@@ -52,6 +51,9 @@ public final class IMUHandler extends ThreadSubSystem {
     }
     public synchronized double getRelativeHeading() {
         return heading - startHeading;
+    }
+    public synchronized double getStartHeading() {
+        return startHeading;
     }
     //endregion
 }

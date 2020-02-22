@@ -1,25 +1,39 @@
-package quasar.threadsubsystems;
+package quasar.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.GamepadState;
 import quasar.lib.MoreMath;
-import quasar.old.SubSystem.Auto;
-import quasar.lib.ThreadSubSystem;
+import quasar.lib.SubSystem;
+import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
+import quasar.subsystems.threaded.IMUHandler;
+import quasar.subsystems.threaded.VuforiaPositionDetector;
 
-public final class Mecanum extends ThreadSubSystem implements MacroSystem {
+public final class Mecanum extends SubSystem implements MacroSystem {
 
     private class EncoderPosition {
         int fl, fr, bl, br;
 
+        /**
+         * Constructor where you give it integer values for all positions.  Has some use, but
+         * EncoderPosition() would honestly be used more
+         * @param fl Front Left position
+         * @param fr Front Right position
+         * @param bl Back Left position
+         * @param br Back Right position
+         */
         EncoderPosition(int fl, int fr, int bl, int br) {
             this.fl = fl;
             this.fr = fr;
             this.bl = bl;
             this.br = br;
         }
+
+        /**
+         * Gets the current position.  This is just a nice shorthand for me :)
+         */
         EncoderPosition() {
             this.fl = Mecanum.this.fl.getCurrentPosition();
             this.fr = Mecanum.this.fr.getCurrentPosition();
@@ -27,14 +41,24 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
             this.br = Mecanum.this.br.getCurrentPosition();
         }
 
-        public int getFwdTicks() {
-            return (fl + fr + bl + br) / 4;
+        public EncoderPosition fwd(int ticks) {
+            return new EncoderPosition(
+                    fl + ticks,
+                    fr + ticks,
+                    bl + ticks,
+                    br + ticks
+            );
         }
-        public int getStrafeTicks() {
-            return (fl - fr - bl + br) / 4;
+        public int getStrafeTicksFrom(EncoderPosition startPos) {
+            EncoderPosition diff = this.subtract(startPos);
+            return (diff.fl - diff.fr - diff.bl + diff.br) / 4;
         }
 
-        public EncoderPosition subtract(EncoderPosition b) {
+        public int fwdTicks() {
+            return (fl + fr + bl + br) / 4;
+        }
+
+        private EncoderPosition subtract(EncoderPosition b) {
             return new EncoderPosition(this.fl - b.fl, this.fr - b.fr, this.bl - b.bl, this.br - b.br);
         }
     }
@@ -49,7 +73,7 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
 
     //region SubSystem
     @Override
-    protected void _init() {
+    public void init() {
         fl = hmap.dcMotor.get("fl");
         fr = hmap.dcMotor.get("fr");
         bl = hmap.dcMotor.get("bl");
@@ -74,14 +98,16 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
     }
 
     @Override
-    protected void _loop() {
+    public void loop() {
         control();
         setNumericalPowers();
         setMotorPowers();
+
+        postLoop();
     }
 
     @Override
-    protected void _stop() {
+    public void stop() {
         fl.setPower(0);
         fr.setPower(0);
         bl.setPower(0);
@@ -89,7 +115,7 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
     }
 
     @Override
-    protected void _telemetry() {
+    public void telemetry() {
         telemetry.addLine("MECANUM");
         telemetry.addData("    Slow Mode", slowMode);
         telemetry.addData("    Forward", fwd);
@@ -146,7 +172,7 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
     }
     //endregion
 
-    public synchronized void setPowers(double fwd, double strafe, double turn) {
+    public void setPowers(double fwd, double strafe, double turn) {
         this.fwd = fwd;
         this.strafe = strafe;
         this.turn = turn;
@@ -157,7 +183,6 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
 
     @Auto public void goToPositionVuforia(double endX, double endY, IMUHandler i, VuforiaPositionDetector pd) {
         double startAngle = i.getAbsoluteHeading();
-
         while(lop.opModeIsActive() && pd.imageIsVisible()) {
             double angle = i.getAbsoluteHeading();
             double diff = startAngle - angle;
@@ -174,31 +199,52 @@ public final class Mecanum extends ThreadSubSystem implements MacroSystem {
 
             setPowers(-xPow, yPow, turn);
         }
-
-        setPowers(0,0,0);
-
     }
-    @Auto public void gyroStableMoveTicks(double fwd, double strafe, double absoluteAngle, IMUHandler i) {
-        EncoderPosition startPos   = new EncoderPosition();
-        EncoderPosition currentPos = new EncoderPosition();
-        setPowers(fwd, strafe, 0);
 
+    @Auto public void fwdTicks(int ticks, double targetHeading, IMUHandler i) {
 
+        EncoderPosition startPos = new EncoderPosition();
+        EncoderPosition current  = new EncoderPosition();
+        EncoderPosition end      = startPos.fwd(ticks);
+
+        while(lop.opModeIsActive() && MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), 40 )) {
+            current = new EncoderPosition();
+            int diffTicks = end.subtract(current).fwdTicks();
+
+            double turn = turnForStableAngle(targetHeading, i);
+            double fwd  = MoreMath.clip(diffTicks / 50, -0.5, 0.5);
+
+            setPowers(fwd,0, turn);
+
+            telemetry.addData("DiffTicks", diffTicks);
+            telemetry.addData("Heading", i.getAbsoluteHeading());
+            telemetry.addData("Target Heading", targetHeading);
+
+            telemetry.update();
+        }
     }
-    @Auto public void turnToGlobalDegrees() {
 
+    private double turnForStableAngle(double targetHeading, IMUHandler i) {
+        double diff = targetHeading - i.getAbsoluteHeading();
+        return MoreMath.clip( -diff / 45, -.5, .5 );
     }
+    //TODO: Make gyro-stabilized movements
 
 
     //region Macro
     @Override
-    public void setMacroState() {
-
+    public void recordMacroState() {
+        MacroState.Companion.getCurrentMacroState().setFl(fl.getPower());
+        MacroState.Companion.getCurrentMacroState().setFr(fr.getPower());
+        MacroState.Companion.getCurrentMacroState().setBl(bl.getPower());
+        MacroState.Companion.getCurrentMacroState().setBr(br.getPower());
     }
-
     @Override
-    public void getMacroState() {
-
+    public void playMacroState(MacroState m) {
+        fl.setPower(m.getFl());
+        fr.setPower(m.getFr());
+        bl.setPower(m.getBl());
+        br.setPower(m.getBr());
     }
     //endregion
 }

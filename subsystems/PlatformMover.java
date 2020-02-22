@@ -1,12 +1,14 @@
-package quasar.threadsubsystems;
+package quasar.subsystems;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
+import quasar.lib.SubSystem;
 import quasar.lib.ThreadSubSystem;
+import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
-public final class PlatformMover extends ThreadSubSystem implements MacroSystem {
+public final class PlatformMover extends SubSystem implements MacroSystem {
 
     private Servo platformLeft, platformRight;
 
@@ -15,7 +17,7 @@ public final class PlatformMover extends ThreadSubSystem implements MacroSystem 
 
     //region SubSystem
     @Override
-    protected void _init() {
+    public void init() {
         platformLeft  = hmap.servo.get("platformLeft");
         platformRight = hmap.servo.get("platformRight");
 
@@ -24,18 +26,20 @@ public final class PlatformMover extends ThreadSubSystem implements MacroSystem 
     }
 
     @Override
-    protected void _loop() {
+    public void loop() {
         isDown = GamepadState.toggle(gamepad1.dpad_right, prev1.dpad_right, isDown);
         updateHooks();
+
+        postLoop();
     }
 
     @Override
-    protected void _stop() {
+    public void stop() {
         //We don't really care what happens at this point, it's hard to break this system
     }
 
     @Override
-    protected void _telemetry() {
+    public void telemetry() {
         String state = "?";
         if(platformLeft.getPosition() == LEFT_DOWN) state = "DOWN";
         if(platformLeft.getPosition() == LEFT_UP)   state = "UP";
@@ -61,13 +65,15 @@ public final class PlatformMover extends ThreadSubSystem implements MacroSystem 
 
     //region Macro
     @Override
-    public void setMacroState() {
-
+    public void recordMacroState() {
+        MacroState.Companion.getCurrentMacroState().setPfLeftPos(platformLeft.getPosition());
+        MacroState.Companion.getCurrentMacroState().setPfRightPos(platformRight.getPosition());
     }
 
     @Override
-    public void getMacroState() {
-
+    public void playMacroState(MacroState m) {
+        platformLeft.setPosition(m.getPfLeftPos());
+        platformRight.setPosition(m.getPfRightPos());
     }
     //endregion
 }

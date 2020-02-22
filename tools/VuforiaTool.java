@@ -1,12 +1,12 @@
-package quasar.testing.subsystems;
+package quasar.tools;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import quasar.threadsubsystems.VuforiaPositionDetector;
+import quasar.subsystems.threaded.VuforiaPositionDetector;
 
 @TeleOp(name = "Position Getter", group = "Tests")
-public class VuforiaRecognizerTest extends LinearOpMode {
+public class VuforiaTool extends LinearOpMode {
     private VuforiaPositionDetector vf = new VuforiaPositionDetector();
 
     @Override

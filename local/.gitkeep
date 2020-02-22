@@ -1,1 +1,3 @@
 #This is just an unimportant file so I can put the local folder (which should be empty!) onto our shared repo
+#The local folder should be used for unimportant quick tests or stuff of thatt nature (like teaching other programmers)
+#that we don't want on Github

@@ -21,6 +21,7 @@ public abstract class ThreadSubSystem extends Thread {
 
     private boolean telemetryIsActive = false;
     private boolean isAutonomous = false;
+    protected boolean isBusy = false;
 
     private long prevTime = 0, cycleTime = 0; //This tells how long the current loop cycle is
     //endregion
@@ -119,6 +120,9 @@ public abstract class ThreadSubSystem extends Thread {
 
     public synchronized double getCycleTime() {
         return cycleTime;
+    }
+    public synchronized boolean isBusy() {
+        return isBusy;
     }
 
     //endregion

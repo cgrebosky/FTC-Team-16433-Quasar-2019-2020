@@ -1,15 +1,15 @@
-package quasar.old.macro
+package quasar.lib.macro
 
-import quasar.old.macro.MacroState.Companion.filename
-import quasar.old.macro.MacroState.Companion.path
+import quasar.lib.macro.MacroState.Companion.filename
+import quasar.lib.macro.MacroState.Companion.path
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
-import quasar.old.subsystems.Collector
-import quasar.old.subsystems.Lift
-import quasar.old.subsystems.Mecanum
-import quasar.old.subsystems.PlatformMover
+import quasar.subsystems.Collector
+import quasar.subsystems.Lift
+import quasar.subsystems.Mecanum
+import quasar.subsystems.PlatformMover
 import java.io.File
 import java.io.FileInputStream
 import java.io.ObjectInputStream
@@ -90,7 +90,6 @@ open class MacroPlayer: LinearOpMode() {
     fun initRobot() {
         me.create(this)
         me.init()
-        me.useCompBotConfig()
 
         pf.create(this)
         pf.init()
@@ -103,25 +102,9 @@ open class MacroPlayer: LinearOpMode() {
     }
 
     fun actState(m: MacroState) {
-        //region Put all active subsystem actStates here
-        me.bl.power = m.blPow
-        me.br.power = m.brPow
-        me.fl.power = m.flPow
-        me.fr.power = m.frPow
-
-        pf.left.position  = m.pfLeftPos
-        pf.right.position = m.pfRightPos
-
-        co.left.power = m.colLeftPow
-        co.right.power = m.colRightPow
-        co.limiterLeft.position = m.leftLim
-        co.limiterRight.position = m.rightLim
-
-        li.liftLeft.power = m.liftPow
-        li.liftRight.power = m.liftPow
-        li.extenderLeft.power = m.extenderPow
-        li.extenderRight.power = m.extenderPow
-        //li.grabber.power= m.grabberPos
-        //endregion
+        me.playMacroState(m)
+        pf.playMacroState(m)
+        co.playMacroState(m)
+        li.playMacroState(m)
     }
 }

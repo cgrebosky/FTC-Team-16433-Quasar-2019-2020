@@ -4,6 +4,6 @@ public interface MacroSystem {
     /**
      * This should set the subsystem to the current state
      */
-    public void setMacroState();
-    public void getMacroState();
+    public void recordMacroState();
+    public void playMacroState(MacroState m);
 }

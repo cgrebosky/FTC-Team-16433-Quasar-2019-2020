@@ -1,4 +1,4 @@
-package quasar.threadsubsystems;
+package quasar.subsystems.threaded;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
