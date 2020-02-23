@@ -3,6 +3,8 @@ package quasar.subsystems;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import java.util.Base64;
+
 import quasar.lib.GamepadState;
 import quasar.lib.MoreMath;
 import quasar.lib.SubSystem;
@@ -11,6 +13,7 @@ import quasar.lib.macro.MacroSystem;
 import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.VuforiaPositionDetector;
 
+//TODO: Make Gyro-stabilized tele-op options?
 public final class Mecanum extends SubSystem implements MacroSystem {
 
     private class EncoderPosition {
@@ -41,7 +44,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             this.br = Mecanum.this.br.getCurrentPosition();
         }
 
-        public EncoderPosition fwd(int ticks) {
+        EncoderPosition fwd(int ticks) {
             return new EncoderPosition(
                     fl + ticks,
                     fr + ticks,
@@ -49,13 +52,20 @@ public final class Mecanum extends SubSystem implements MacroSystem {
                     br + ticks
             );
         }
-        public int getStrafeTicksFrom(EncoderPosition startPos) {
-            EncoderPosition diff = this.subtract(startPos);
-            return (diff.fl - diff.fr - diff.bl + diff.br) / 4;
+        EncoderPosition strafe(int ticks) {
+            return new EncoderPosition(
+                    fl + ticks,
+                    fr - ticks,
+                    bl - ticks,
+                    br + ticks
+            );
         }
 
-        public int fwdTicks() {
+        int fwdTicks() {
             return (fl + fr + bl + br) / 4;
+        }
+        int strafeTicks() {
+            return (fl - fr - bl + br) / 4;
         }
 
         private EncoderPosition subtract(EncoderPosition b) {
@@ -170,7 +180,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     }
     //endregion
 
-    public void setPowers(double fwd, double strafe, double turn) {
+    private void setPowers(double fwd, double strafe, double turn) {
         this.fwd = fwd;
         this.strafe = strafe;
         this.turn = turn;
@@ -205,7 +215,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         EncoderPosition current  = new EncoderPosition();
         EncoderPosition end      = startPos.fwd(ticks);
 
-        while(lop.opModeIsActive() && MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), 40 )) {
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), 40 )) {
             current = new EncoderPosition();
             int diffTicks = end.subtract(current).fwdTicks();
 
@@ -217,16 +227,34 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             telemetry.addData("DiffTicks", diffTicks);
             telemetry.addData("Heading", i.getAbsoluteHeading());
             telemetry.addData("Target Heading", targetHeading);
+            telemetry.update();
+        }
+    }
+    @Auto public void strafeTicks(int ticks, double targetHeading, IMUHandler i) {
+        EncoderPosition startPos = new EncoderPosition();
+        EncoderPosition current  = new EncoderPosition();
+        EncoderPosition end      = startPos.strafe(ticks);
 
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.strafeTicks(), end.strafeTicks(), 40 )) {
+            current = new EncoderPosition();
+            int diffTicks = end.subtract(current).strafeTicks();
+
+            double turn   = turnForStableAngle(targetHeading, i);
+            double strafe = MoreMath.clip(diffTicks / 50, -0.5, 0.5);
+
+            setPowers(0, strafe, turn);
+
+            telemetry.addData("DiffTicks", diffTicks);
+            telemetry.addData("Heading", i.getAbsoluteHeading());
+            telemetry.addData("Target Heading", targetHeading);
             telemetry.update();
         }
     }
 
     private double turnForStableAngle(double targetHeading, IMUHandler i) {
         double diff = targetHeading - i.getAbsoluteHeading();
-        return MoreMath.clip( -diff / 45, -.5, .5 );
+        return MoreMath.clip( -diff / 30, -.5, .5 );
     }
-    //TODO: Make gyro-stabilized movements
 
 
     //region Macro
