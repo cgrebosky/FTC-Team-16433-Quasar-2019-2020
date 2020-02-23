@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "Motor Tool", group = "Tools")
 @Disabled
-public class MotorTool extends OpMode {
+public final class MotorTool extends OpMode {
 
     private DcMotor motor, rightArm;
 

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Servo Tool", group = "Tools")
 @Disabled
-public class ServoTool extends OpMode {
+public final class ServoTool extends OpMode {
 
     private Servo servo;
 

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Collector Position Tool", group = "Tools")
 @Disabled
-public class ServoCollectorPositionTool extends OpMode {
+public final class ServoCollectorPositionTool extends OpMode {
 
     Servo limitLeft, limitRight;
 
