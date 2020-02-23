@@ -18,6 +18,9 @@ public final class MecanumTickTool extends OpMode {
         m.create(this);
         m.init();
 
+        startPos   = m.new EncoderPosition();
+        currentPos = m.new EncoderPosition();
+
         telemetry.addLine("READY");
         telemetry.update();
     }
@@ -25,9 +28,16 @@ public final class MecanumTickTool extends OpMode {
     @Override
     public void loop() {
         if(gamepad1.a) startPos = m.new EncoderPosition(); //This is some spicy notation, I didn't even know you could do this :D
-        currentPos = m.new EncoderPosition();
+        currentPos              = m.new EncoderPosition();
 
-        m.loop();
+        double fwd    = -gamepad1.left_stick_y;
+        double strafe = gamepad1.left_stick_x;
+        double turn   = gamepad1.right_stick_x;
+        //This makes it so we can ONLY go forward or sideways at one time, we can't go diagonally
+        if(Math.abs(fwd) > Math.abs(strafe)) strafe = 0;
+        else fwd = 0;
+
+        m.setPowers(fwd, strafe, turn);
 
         telemetry.addData("Start Position", startPos);
         telemetry.addData("Current Position", currentPos);
