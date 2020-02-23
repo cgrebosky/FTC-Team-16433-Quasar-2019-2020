@@ -55,7 +55,7 @@ final public class VuforiaPositionDetector extends ThreadSubSystem {
         telemetry.addData("    Target Visible", targetVisible);
         telemetry.addData("    Cycle Time", getCycleTime());
         telemetry.addData("    Hz", 1000 / getCycleTime());
-        telemetry.update();
+        telemetry.addLine();
     }
     //endregion SubSystem
     //region Vuforia

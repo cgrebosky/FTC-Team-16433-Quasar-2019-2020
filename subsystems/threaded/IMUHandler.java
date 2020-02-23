@@ -43,6 +43,7 @@ public final class IMUHandler extends ThreadSubSystem {
         telemetry.addLine("IMU");
         telemetry.addData("    Heading", heading);
         telemetry.addData("    Initial Heading", startHeading);
+        telemetry.addLine();
     }
     //endregion
     //region Getters

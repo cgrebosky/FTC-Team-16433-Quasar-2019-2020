@@ -45,6 +45,7 @@ public final class PlatformMover extends SubSystem implements MacroSystem {
         if(platformLeft.getPosition() == LEFT_UP)   state = "UP";
         telemetry.addLine("PLATFORM MOVER");
         telemetry.addData("    Current State", state);
+        telemetry.addLine();
     }
     //endregion
 

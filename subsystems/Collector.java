@@ -61,6 +61,7 @@ public final class Collector extends SubSystem implements MacroSystem {
         if(limiterLeft.getPosition() == LEFT_OPEN) pos = "OPEN";
         telemetry.addData("    Current Position", pos);
         telemetry.addData("    Power", gamepad1.left_trigger - gamepad1.right_trigger);
+        telemetry.addLine();
     }
     //endregion
 

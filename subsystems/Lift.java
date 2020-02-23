@@ -80,6 +80,7 @@ public final class Lift extends SubSystem implements MacroSystem {
         telemetry.addData("    Claw State", clawLeft.getPosition() == CLAW_LEFT_CLOSED ?"CLOSED":"OPEN");
         telemetry.addData("    Claw Angle", clawAngle.getPosition() == ANGLE_OUT ?"OUT":"IN");
         telemetry.addData("    Arm Power", extenderLeft.getPower());
+        telemetry.addLine();
     }
     //endregion
 

@@ -134,6 +134,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         telemetry.addData("    Forward", fwd);
         telemetry.addData("    Strafe", strafe);
         telemetry.addData("    Rotation", turn);
+        telemetry.addLine();
     }
     //endregion
 

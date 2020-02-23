@@ -59,7 +59,10 @@ public abstract class ThreadSubSystem extends Thread {
 
         updateGamepadStates();
 
-        if(telemetryIsActive) _telemetry();
+        if(telemetryIsActive) {
+            _telemetry();
+            telemetry.update();
+        }
     }
     //endregion
 
