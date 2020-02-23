@@ -93,8 +93,6 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         br.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        telemetry.addLine("Mecanum Ready");
     }
 
     @Override

@@ -22,19 +22,27 @@ public final class Autonomous3B extends LinearOpMode {
 
         c.create(this);
         c.init();
+        say("Collector Ready");
         m.create(this);
         m.init();
+        say("Mecanum Ready");
         l.create(this);
         l.init();
+        say("Lift Ready");
         p.create(this);
         p.init();
+        say("Platform Mover Ready");
 
         i.create(this, false);
         i.start();
+        say("IMU Ready");
         v.create(this, false);
         v.start();
+        say("Vuforia Ready");
 
+        say("Waiting for Start");
         waitForStart();
+        say("Started");
 
         m.fwdTicks(1000, 0, i);
 
@@ -43,5 +51,8 @@ public final class Autonomous3B extends LinearOpMode {
 
     }
 
-
+    private void say(Object o) {
+        telemetry.addLine(o.toString());
+        telemetry.update();
+    }
 }
