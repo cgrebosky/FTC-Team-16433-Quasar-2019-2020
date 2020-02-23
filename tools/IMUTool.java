@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
-@TeleOp(name = "IMU Testing", group = "Tests")
+@TeleOp(name = "IMU Tool", group = "Tests")
 public final class IMUTool extends OpMode {
 
     private BNO055IMU imu;

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Claw Position Tester", group = "Tools")
+@TeleOp(name = "Claw Position Tool", group = "Tools")
 @Disabled
 public class ClawPositionTool extends OpMode {
 
