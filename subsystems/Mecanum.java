@@ -16,7 +16,7 @@ import quasar.subsystems.threaded.VuforiaPositionDetector;
 //TODO: Make Gyro-stabilized tele-op options?
 public final class Mecanum extends SubSystem implements MacroSystem {
 
-    private class EncoderPosition {
+    public class EncoderPosition {
         int fl, fr, bl, br;
 
         /**
@@ -37,7 +37,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         /**
          * Gets the current position.  This is just a nice shorthand for me :)
          */
-        EncoderPosition() {
+        public EncoderPosition() {
             this.fl = Mecanum.this.fl.getCurrentPosition();
             this.fr = Mecanum.this.fr.getCurrentPosition();
             this.bl = Mecanum.this.bl.getCurrentPosition();
@@ -61,15 +61,20 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             );
         }
 
-        int fwdTicks() {
+        public int fwdTicks() {
             return (fl + fr + bl + br) / 4;
         }
-        int strafeTicks() {
+        public int strafeTicks() {
             return (fl - fr - bl + br) / 4;
         }
 
-        private EncoderPosition subtract(EncoderPosition b) {
+        public EncoderPosition subtract(EncoderPosition b) {
             return new EncoderPosition(this.fl - b.fl, this.fr - b.fr, this.bl - b.bl, this.br - b.br);
+        }
+
+        @Override
+        public String toString() {
+            return "{" + fl + ", " + fr + ", " + bl + ", " + br + "}";
         }
     }
 

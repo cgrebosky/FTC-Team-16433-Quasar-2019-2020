@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import quasar.subsystems.threaded.VuforiaPositionDetector;
 
-@TeleOp(name = "Vuforia Position Tool", group = "Tests")
+@TeleOp(name = "Vuforia Position Tool", group = "Tools")
 @Disabled
 public final class VuforiaTool extends LinearOpMode {
     private VuforiaPositionDetector vf = new VuforiaPositionDetector();
