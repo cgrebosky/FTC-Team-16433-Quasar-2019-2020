@@ -1,10 +1,12 @@
-package quasar.lib;
+package quasar.subsystems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import quasar.lib.GamepadState;
 
 
 public abstract class ThreadSubSystem extends Thread {

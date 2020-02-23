@@ -3,11 +3,8 @@ package quasar.subsystems;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import java.util.Base64;
-
 import quasar.lib.GamepadState;
 import quasar.lib.MoreMath;
-import quasar.lib.SubSystem;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 import quasar.subsystems.threaded.IMUHandler;

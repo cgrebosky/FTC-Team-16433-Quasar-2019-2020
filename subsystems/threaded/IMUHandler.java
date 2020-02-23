@@ -2,7 +2,7 @@ package quasar.subsystems.threaded;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
-import quasar.lib.ThreadSubSystem;
+import quasar.subsystems.ThreadSubSystem;
 
 public final class IMUHandler extends ThreadSubSystem {
 

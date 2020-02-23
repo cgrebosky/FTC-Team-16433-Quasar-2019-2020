@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import quasar.lib.SubSystem;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 

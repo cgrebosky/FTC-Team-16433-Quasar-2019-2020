@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.GamepadState;
-import quasar.lib.SubSystem;
-import quasar.lib.ThreadSubSystem;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
