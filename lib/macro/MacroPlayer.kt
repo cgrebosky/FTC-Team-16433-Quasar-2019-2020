@@ -18,7 +18,7 @@ import java.util.*
 @Autonomous(name = "Macro Player")
 class MacroPlayer: LinearOpMode() {
 
-    lateinit var recording: LinkedList<MacroState>
+    private lateinit var recording: LinkedList<MacroState>
 
     private val me = Mecanum()
     private val pf = PlatformMover()
