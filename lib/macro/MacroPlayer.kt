@@ -16,16 +16,14 @@ import java.io.ObjectInputStream
 import java.util.*
 
 @Autonomous(name = "Macro Player")
-open class MacroPlayer: LinearOpMode() {
+class MacroPlayer: LinearOpMode() {
 
     lateinit var recording: LinkedList<MacroState>
 
-    //region variables
-    val me = Mecanum()
-    val pf = PlatformMover()
-    val co = Collector()
-    val li = Lift()
-    //endregion
+    private val me = Mecanum()
+    private val pf = PlatformMover()
+    private val co = Collector()
+    private val li = Lift()
 
     override fun runOpMode() {
         initialize()
@@ -43,7 +41,7 @@ open class MacroPlayer: LinearOpMode() {
             i++
         }
     }
-    fun readData() {
+    private fun readData() {
         val f = File("$path/$filename")
         val fis = FileInputStream(f)
         val ois = ObjectInputStream(fis)
@@ -51,11 +49,11 @@ open class MacroPlayer: LinearOpMode() {
         @SuppressWarnings("unchecked")
         recording = ois.readObject() as LinkedList<MacroState>
     }
-    fun telePrint(msg: String) {
+    private fun telePrint(msg: String) {
         telemetry.addLine(msg)
         telemetry.update()
     }
-    fun initialize() {
+    private fun initialize() {
 
         var prevUp = gamepad1.dpad_up
         var prevDown = gamepad1.dpad_down
@@ -87,7 +85,7 @@ open class MacroPlayer: LinearOpMode() {
 
         telePrint("Ready")
     }
-    fun initRobot() {
+    private fun initRobot() {
         me.create(this)
         me.init()
 
@@ -101,7 +99,7 @@ open class MacroPlayer: LinearOpMode() {
         li.init()
     }
 
-    fun actState(m: MacroState) {
+    private fun actState(m: MacroState) {
         me.playMacroState(m)
         pf.playMacroState(m)
         co.playMacroState(m)

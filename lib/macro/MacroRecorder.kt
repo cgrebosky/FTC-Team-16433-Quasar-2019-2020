@@ -21,7 +21,7 @@ class MacroRecorder: OpMode() {
 
     private enum class State {UNINITIALIZED, RUNNING, STOPPED}
 
-    var recording = LinkedList<MacroState>()
+    private var recording = LinkedList<MacroState>()
 
     private var state = State.UNINITIALIZED
 
@@ -98,7 +98,7 @@ class MacroRecorder: OpMode() {
         co.stop()
         li.stop()
     }
-    fun serializeData() {
+    private fun serializeData() {
         //"reindex" the data so that time starts at 0.  This just makes it easier to deal with.
         val t0 = recording[0].time
         for(i in 0 until (recording.size - 1)) {
@@ -111,13 +111,13 @@ class MacroRecorder: OpMode() {
 
         oos.writeObject(recording)
     }
-    fun printTelemetry() {
+    private fun printTelemetry() {
         telemetry.addLine("Press [A] to start, [X] to stop")
         telemetry.addData("Status", state)
 
         telemetry.update()
     }
-    fun recordData() {
+    private fun recordData() {
         me.recordMacroState()
         pf.recordMacroState()
         co.recordMacroState()
