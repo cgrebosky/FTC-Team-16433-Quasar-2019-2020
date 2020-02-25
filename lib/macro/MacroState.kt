@@ -31,8 +31,31 @@ data class MacroState(var time: Long): Serializable {
     var anglePos = 0.0
     //endregion
 
+    fun clone(t: Long): MacroState {
+        val m = MacroState(t)
+        m.fl = this.fl
+        m.fr = this.fr
+        m.bl = this.bl
+        m.br = this.br
+
+        m.pfLeftPos = this.pfLeftPos
+        m.pfRightPos = this.pfRightPos
+
+        m.colLeftPow = this.colLeftPow
+        m.colRightPow = this.colRightPow
+        m.leftLim = this.leftLim
+        m.rightLim = this.rightLim
+
+        m.liftPow = this.liftPow
+        m.extenderPow = this.extenderPow
+        m.grabberPos = this.grabberPos
+        m.anglePos = this.anglePos
+
+        return m
+    }
+
     companion object {
-        val currentMacroState = MacroState(0);
+        val currentMacroState = MacroState(System.currentTimeMillis())
 
         val potentialFileNames = arrayOf("MacroRecording (DEBUG - DO NOT USE)",
                 "RED Platform Mover",

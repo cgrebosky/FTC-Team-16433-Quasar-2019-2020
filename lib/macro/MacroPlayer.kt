@@ -38,7 +38,7 @@ open class MacroPlayer: LinearOpMode() {
         while(opModeIsActive() && i < recording.size - 3) {
             actState(recording[i])
 
-            while (System.currentTimeMillis() - t0 < recording[i].time) sleep(1)
+            while (System.currentTimeMillis() - t0 < recording[i].time) idle()
 
             i++
         }

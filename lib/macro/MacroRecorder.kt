@@ -85,9 +85,7 @@ class MacroRecorder: OpMode() {
         if(state == State.UNINITIALIZED && gamepad1.a) state = State.RUNNING
         if(state == State.RUNNING && gamepad1.x) state = State.STOPPED
 
-        if(state == State.RUNNING)
-            recording.add( currentMacroState )
-        else if(state == State.STOPPED) {
+        if(state == State.STOPPED) {
             serializeData()
             stop()
         }
@@ -124,5 +122,8 @@ class MacroRecorder: OpMode() {
         pf.recordMacroState()
         co.recordMacroState()
         li.recordMacroState()
+
+        if(state == State.RUNNING)
+            recording.add(currentMacroState.clone(System.currentTimeMillis()))
     }
 }
