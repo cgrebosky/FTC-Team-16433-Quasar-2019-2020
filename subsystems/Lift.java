@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import quasar.lib.GamepadState;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
@@ -80,7 +79,8 @@ public final class Lift extends SubSystem implements MacroSystem {
     }
     //endregion
 
-    boolean prevRightBumper = false, prevLeftBumper = false;
+    private boolean prevRightBumper = false;
+    private boolean prevLeftBumper = false;
     private void controlClaw() {
         if(!prevLeftBumper && gamepad2.left_bumper) angleIsOut = !angleIsOut;
         if(!prevRightBumper && gamepad2.right_bumper) clawIsOpen = !clawIsOpen;
