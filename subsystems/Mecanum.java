@@ -81,7 +81,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     private boolean slowMode = false;
 
-    private final double CTRL_THRESHOLD = 0.08;
+    private final double CTRL_THRESHOLD = 0.1;
 
     //region SubSystem
     @Override
@@ -147,6 +147,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             strafe *= 0.4;
             turn   *= 0.4;
         }
+
+        thresholdControls();
     }
     private void setNumericalPowers() {
         powFL = fwd + strafe + turn;
@@ -155,7 +157,6 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         powBR = fwd + strafe - turn;
 
         normalizePowers();
-        thresholdControls();
     }
     private void setMotorPowers() {
         fl.setPower(powFL);
@@ -165,10 +166,10 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     }
     private void normalizePowers() {
         //Having max compared to 1 allows us to have fine control, i.e., we're not always going at full speed
-        double max = Math.max(1, powFL);
-        max = Math.max(max, powFR);
-        max = Math.max(max, powBL);
-        max = Math.max(max, powBR);
+        double max = Math.max(1, Math.abs(powFL));
+        max = Math.max(max, Math.abs(powFR));
+        max = Math.max(max, Math.abs(powBL));
+        max = Math.max(max, Math.abs(powBR));
 
         powFL /= max;
         powFR /= max;
