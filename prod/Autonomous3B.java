@@ -49,16 +49,12 @@ public final class Autonomous3B extends LinearOpMode {
         waitForStart();
         say("Started");
 
-        m.strafeTicks(1500, 0, i);
-        m.strafeTicks(-400, 0, i);
-        m.fwdTicks(-3800, 0, i);
-        m.fwdTicks(4000, 0, i);
-
+        m.moveXYTicks(-1000,1100, 0, i);
     }
 
     private void say(Object o) {
         telemetry.addLine(o.toString());
         telemetry.update();
-        sleep(50); //lol I just like being able to see all th telemetry in succession.  It's so pretty!
+        sleep(50); //lol I just like being able to see all the telemetry in succession.  It's so pretty!
     }
 }
