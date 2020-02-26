@@ -141,14 +141,14 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         strafe =  gamepad1.left_stick_x;
         turn   =  gamepad1.right_stick_x;
 
+        thresholdControls();
+
         slowMode = GamepadState.toggle(gamepad1.left_stick_button || gamepad1.right_stick_button, prev1.left_stick_button || prev1.right_stick_button, slowMode);
         if(slowMode) {
-            fwd    *= 0.4;
-            strafe *= 0.4;
-            turn   *= 0.4;
+            fwd    *= 0.3;
+            strafe *= 0.3;
+            turn   *= 0.3;
         }
-
-        thresholdControls();
     }
     private void setNumericalPowers() {
         powFL = fwd + strafe + turn;
