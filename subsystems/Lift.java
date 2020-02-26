@@ -80,9 +80,13 @@ public final class Lift extends SubSystem implements MacroSystem {
     }
     //endregion
 
+    boolean prevRightBumper = false, prevLeftBumper = false;
     private void controlClaw() {
-        clawIsOpen = GamepadState.toggle(gamepad2.right_bumper, prev2.right_bumper, clawIsOpen);
-        angleIsOut = GamepadState.toggle(gamepad2.left_bumper, prev2.left_bumper, angleIsOut);
+        if(!prevLeftBumper && gamepad2.left_bumper) angleIsOut = !angleIsOut;
+        if(!prevRightBumper && gamepad2.right_bumper) clawIsOpen = !clawIsOpen;
+
+        prevLeftBumper = gamepad2.left_bumper;
+        prevRightBumper = gamepad2.right_bumper;
 
         if(clawIsOpen) claw.setPosition(CLAW_OPEN);
         else           claw.setPosition(CLAW_CLOSED);

@@ -2,6 +2,9 @@ package quasar.prod;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
+
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.*;
@@ -20,6 +23,14 @@ public final class Autonomous3B extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        //If we put the multithreaded systems first, that gives it a bit more time to start up
+        i.create(this, false);
+        i.start();
+        say("IMU Ready");
+        v.create(this, false);
+        v.start();
+        say("Vuforia Ready");
+
         c.create(this);
         c.init();
         say("Collector Ready");
@@ -33,21 +44,14 @@ public final class Autonomous3B extends LinearOpMode {
         p.init();
         say("Platform Mover Ready");
 
-        i.create(this, false);
-        i.start();
-        say("IMU Ready");
-        v.create(this, false);
-        v.start();
-        say("Vuforia Ready");
-
-        say("Waiting for Start");
+        say("All Subsystems initialized successfully\n\nWaiting for Start");
         waitForStart();
         say("Started");
 
-        m.fwdTicks(1000, 0, i);
-
-        while(opModeIsActive()) telemetry.update();
-
+        m.strafeTicks(1500, 0, i);
+        m.strafeTicks(-400, 0, i);
+        m.fwdTicks(-3800, 0, i);
+        m.fwdTicks(4000, 0, i);
 
     }
 
