@@ -143,7 +143,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
         thresholdControls();
 
-        slowMode = GamepadState.toggle(gamepad1.left_stick_button || gamepad1.right_stick_button, prev1.left_stick_button || prev1.right_stick_button, slowMode);
+        slowMode = gamepad1.left_stick_button || gamepad1.right_stick_button;
         if(slowMode) {
             fwd    *= 0.3;
             strafe *= 0.3;
@@ -256,7 +256,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     private double turnForStableAngle(double targetHeading, IMUHandler i) {
         double diff = targetHeading - i.getAbsoluteHeading();
-        return MoreMath.clip( -diff / 30, -.5, .5 );
+        return MoreMath.clip( -diff / 45, -.5, .5 );
     }
 
 
