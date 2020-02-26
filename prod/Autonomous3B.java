@@ -2,10 +2,8 @@ package quasar.prod;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
-
+import quasar.lib.AutoTransitioner;
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.*;
 
@@ -44,6 +42,9 @@ public final class Autonomous3B extends LinearOpMode {
         p.init();
         say("Platform Mover Ready");
 
+        AutoTransitioner.transitionOnStop(this, "Quasar TeleOp");
+        say("Transitioner Ready");
+
         say("All Subsystems initialized successfully\n\nWaiting for Start");
         waitForStart();
         say("Started");
@@ -58,5 +59,6 @@ public final class Autonomous3B extends LinearOpMode {
     private void say(Object o) {
         telemetry.addLine(o.toString());
         telemetry.update();
+        sleep(50); //lol I just like being able to see all th telemetry in succession.  It's so pretty!
     }
 }
