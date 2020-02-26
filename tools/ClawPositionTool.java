@@ -6,32 +6,28 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Claw Position Tool", group = "Tools")
-@Disabled
 public final class ClawPositionTool extends OpMode {
 
-    double clawLeftPos, clawRightPos, anglePos;
-    Servo clawLeft, clawRight, angle;
+    private double clawPos, anglePos;
+    private Servo claw, angle;
 
     @Override
     public void init() {
-        clawLeft = hardwareMap.servo.get("clawLeft");
-        clawRight = hardwareMap.servo.get("clawRight");
+        claw = hardwareMap.servo.get("claw");
         angle = hardwareMap.servo.get("angle");
+
+        clawPos = claw.getPosition();
+        anglePos = angle.getPosition();
     }
 
     @Override
     public void loop() {
-        if(gamepad1.a)         clawLeftPos += 0.1;
-        if(gamepad1.b)         clawLeftPos -= 0.1;
+        clawPos = (-gamepad1.left_stick_y + 1) / 2;
+        anglePos = (-gamepad1.right_stick_y + 1) / 2;
+        claw.setPosition(clawPos);
+        angle.setPosition(anglePos);
 
-        if(gamepad1.x)         clawRightPos += 0.1;
-        if(gamepad1.y)         clawRightPos -= 0.1;
-
-        if(gamepad1.dpad_up)   anglePos += 0.1;
-        if(gamepad1.dpad_down) anglePos -= 0.1;
-
-        telemetry.addData("Left Claw Position", clawLeftPos);
-        telemetry.addData("Right Claw Position", clawRightPos);
+        telemetry.addData("Claw Position", clawPos);
         telemetry.addData("Angle", anglePos);
         telemetry.update();
 

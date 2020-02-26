@@ -12,11 +12,11 @@ import quasar.lib.macro.MacroSystem;
 
 public final class Lift extends SubSystem implements MacroSystem {
 
-    private final double CLAW_LEFT_CLOSED = 0.67, CLAW_LEFT_OPEN = 0.44, CLAW_RIGHT_CLOSED = 0.3, CLAW_RIGHT_OPEN = 0.1, ANGLE_IN = 0.23, ANGLE_OUT = 1;
+    private final double CLAW_CLOSED = 0.8, CLAW_OPEN = 0.35, ANGLE_IN = 0.82, ANGLE_OUT = .07;
 
     private DcMotor liftLeft, liftRight;
     private CRServo extenderLeft, extenderRight;
-    private Servo clawLeft, clawRight, clawAngle;
+    private Servo claw, clawAngle;
 
     private DigitalChannel limitLeft, limitRight;
 
@@ -37,12 +37,10 @@ public final class Lift extends SubSystem implements MacroSystem {
         extenderRight.setDirection(DcMotorSimple.Direction.REVERSE);
         extenderLeft.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        clawLeft = hmap.servo.get("clawLeft");
-        clawRight = hmap.servo.get("clawRight");
-        clawAngle = hmap.servo.get("clawAngle");
-        clawLeft.setPosition(CLAW_LEFT_OPEN);
-        clawRight.setPosition(CLAW_RIGHT_OPEN);
-        clawAngle.setPosition(ANGLE_IN);
+        claw = hmap.servo.get("claw");
+        clawAngle = hmap.servo.get("angle");
+        claw.setPosition(CLAW_OPEN);
+        //clawAngle.setPosition(ANGLE_IN); //This has caused us more pain than benefit, tbh
 
         limitLeft = hmap.get(DigitalChannel.class, "liftLimitLeft");
         limitRight = hmap.get(DigitalChannel.class, "liftLimitRight");
@@ -75,7 +73,7 @@ public final class Lift extends SubSystem implements MacroSystem {
         telemetry.addData("    Limits Triggered", !limitLeft.getState() || !limitRight.getState());
         telemetry.addData("    Lift Power", liftLeft.getPower());
         telemetry.addLine();
-        telemetry.addData("    Claw State", clawLeft.getPosition() == CLAW_LEFT_CLOSED ?"CLOSED":"OPEN");
+        telemetry.addData("    Claw State", claw.getPosition() == CLAW_CLOSED ?"CLOSED":"OPEN");
         telemetry.addData("    Claw Angle", clawAngle.getPosition() == ANGLE_OUT ?"OUT":"IN");
         telemetry.addData("    Arm Power", extenderLeft.getPower());
         telemetry.addLine();
@@ -86,29 +84,11 @@ public final class Lift extends SubSystem implements MacroSystem {
         clawIsOpen = GamepadState.toggle(gamepad2.right_bumper, prev2.right_bumper, clawIsOpen);
         angleIsOut = GamepadState.toggle(gamepad2.left_bumper, prev2.left_bumper, angleIsOut);
 
-        if(clawIsOpen) openClaw();
-        else           closeClaw();
+        if(clawIsOpen) claw.setPosition(CLAW_OPEN);
+        else           claw.setPosition(CLAW_CLOSED);
 
-        if(angleIsOut) angleClawOut();
-        else           angleClawIn();
-    }
-    private void openClaw() {
-        clawIsOpen = true;
-        clawLeft.setPosition(CLAW_LEFT_OPEN);
-        clawRight.setPosition(CLAW_RIGHT_OPEN);
-    }
-    private void closeClaw() {
-        clawIsOpen = false;
-        clawLeft.setPosition(CLAW_LEFT_CLOSED);
-        clawRight.setPosition(CLAW_RIGHT_CLOSED);
-    }
-    private void angleClawOut() {
-        clawIsOpen = true;
-        clawAngle.setPosition(ANGLE_OUT);
-    }
-    private void angleClawIn() {
-        clawIsOpen = false;
-        clawAngle.setPosition(ANGLE_IN);
+        if(angleIsOut) clawAngle.setPosition(ANGLE_OUT);
+        else           clawAngle.setPosition(ANGLE_IN);
     }
 
     private void controlExtender() {
@@ -134,7 +114,7 @@ public final class Lift extends SubSystem implements MacroSystem {
         MacroState.Companion.getCurrentMacroState().setLiftPow(liftLeft.getPower());
         MacroState.Companion.getCurrentMacroState().setExtenderPow(extenderLeft.getPower());
 
-        MacroState.Companion.getCurrentMacroState().setGrabberPos(clawLeft.getPosition());
+        MacroState.Companion.getCurrentMacroState().setGrabberPos(claw.getPosition());
         MacroState.Companion.getCurrentMacroState().setAnglePos(clawAngle.getPosition());
     }
 
@@ -145,7 +125,7 @@ public final class Lift extends SubSystem implements MacroSystem {
         extenderLeft.setPower(m.getExtenderPow());
         extenderRight.setPower(m.getExtenderPow());
         clawAngle.setPosition(m.getAnglePos());
-        clawLeft.setPosition(m.getGrabberPos());
+        claw.setPosition(m.getGrabberPos());
     }
     //endregion
 }
