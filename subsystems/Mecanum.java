@@ -1,11 +1,13 @@
 package quasar.subsystems;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
+import quasar.prod.Side;
 import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.VuforiaPositionDetector;
 
@@ -281,6 +283,15 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             telemetry.addData("Target Heading", targetHeading);
             telemetry.update();
         }
+    }
+    @Auto public void strafeUntilCloseToBlock(ColorSensor color, IMUHandler imu, Side s) {
+        double pwr = 0.4;
+        if(s == Side.RED) pwr = -pwr;
+        setPowers(0, pwr, 0);
+
+        while(lop.opModeIsActive() && color.red() > 40 && color.red() < 50) setPowers(0, pwr, turnForStableAngle(0, imu));
+        setPowers(0,0,0);
+
     }
 
     private double turnForStableAngle(double targetHeading, IMUHandler i) {
