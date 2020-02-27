@@ -22,15 +22,8 @@ public final class Autonomous3B extends LinearOpMode {
 
     private PartialMacroPlayer pm;
 
-    private ColorSensor left, right;
+    private ColorSensor color;
 
-    private enum Side {
-        RED, BLUE;
-        public Side swap() {
-            if(this == RED) return BLUE;
-            return RED;
-        }
-    }
     private Side side = Side.RED;
     private long delayMS = 0;
 
@@ -38,8 +31,8 @@ public final class Autonomous3B extends LinearOpMode {
     public void runOpMode() {
 
         initSubSystems();
-        initMiscellaneous();
         chooseOptions();
+        initMiscellaneous();
 
         telemetry.addLine("All Subsystems initialized successfully :D");
         telemetry.addData("Side", side == Side.RED ? "RED" : "BLUE");
@@ -51,13 +44,10 @@ public final class Autonomous3B extends LinearOpMode {
 
         m.moveXYTicks(-1400,800, 0, i);
         sleep(1000);
-        m.strafeTicks(300,0, i);
+        m.strafeUntilCloseToBlock(color, i, side);
         pm.playMacro();
     }
 
-    private void strafeUntilCloseToBlock() {
-
-    }
 
     private void chooseOptions() {
 
@@ -82,6 +72,7 @@ public final class Autonomous3B extends LinearOpMode {
             telemetry.addLine("How much delay do you want initially?");
             telemetry.addData("Delay (ms)", delayMS);
             telemetry.addLine("Use [LEFT JOYSTICK] to add/subtract delay.  Press [A] to select");
+            telemetry.update();
         }
     }
     private void initSubSystems() {
@@ -115,8 +106,8 @@ public final class Autonomous3B extends LinearOpMode {
         pm.init();
         say("Macro Ready");
 
-        left  = hardwareMap.colorSensor.get("colorLeft");
-        right = hardwareMap.colorSensor.get("colorRight");
+        if(side == Side.RED) color = hardwareMap.colorSensor.get("colorLeft");
+        else color = hardwareMap.colorSensor.get("colorRight");
         say("Sensors Ready");
 
         AutoTransitioner.transitionOnStop(this, "Quasar TeleOp");
