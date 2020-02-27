@@ -8,10 +8,10 @@ import quasar.subsystems.Mecanum;
 @TeleOp(name = "Mecanum Tick Tool", group = "Tools")
 public final class MecanumTickTool extends OpMode {
 
-    Mecanum m = new Mecanum();
+    private Mecanum m = new Mecanum();
 
-    Mecanum.EncoderPosition startPos;
-    Mecanum.EncoderPosition currentPos;
+    private Mecanum.EncoderPosition startPos;
+    private Mecanum.EncoderPosition currentPos;
 
     @Override
     public void init() {
