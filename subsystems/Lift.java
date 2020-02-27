@@ -39,7 +39,7 @@ public final class Lift extends SubSystem implements MacroSystem {
 
         claw = hmap.servo.get("claw");
         clawAngle = hmap.servo.get("angle");
-        claw.setPosition(CLAW_OPEN);
+        //claw.setPosition(CLAW_OPEN);
         //clawAngle.setPosition(ANGLE_IN); //This has caused us more pain than benefit, tbh
 
         limitLeft = hmap.get(DigitalChannel.class, "liftLimitLeft");
