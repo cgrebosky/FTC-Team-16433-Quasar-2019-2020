@@ -61,7 +61,8 @@ data class MacroState(var time: Long): Serializable {
                 "RED Platform Mover",
                 "BLUE Platform Mover",
                 "RED Block Mover",
-                "BLUE Block Mover"
+                "BLUE Block Mover",
+                "AUTO Platform Mover"
 
         )
         var filename = "MacroRecording"
