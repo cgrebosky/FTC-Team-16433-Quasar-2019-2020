@@ -33,6 +33,11 @@ public final class MecanumTickTool extends OpMode {
         double fwd    = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
         double turn   = gamepad1.right_stick_x;
+
+        fwd = Math.abs(fwd) > 0.15 ? fwd : 0;
+        strafe = Math.abs(strafe) > 0.15 ? strafe : 0;
+        turn = Math.abs(turn) > 0.15 ? turn : 0;
+
         //This makes it so we can ONLY go forward or sideways at one time, we can't go diagonally
         if(Math.abs(fwd) > Math.abs(strafe)) strafe = 0;
         else fwd = 0;
