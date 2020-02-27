@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 
@@ -97,6 +98,7 @@ public final class Lift extends SubSystem implements MacroSystem {
 
     private void controlExtender() {
         double pwr = -gamepad2.left_stick_y;
+        pwr = MoreMath.clip(pwr, -0.95, 0.95); //The servos only work in about this range.  At pwr = 1/-1, they have wierd behaviour...
         extenderLeft.setPower(pwr);
         extenderRight.setPower(pwr);
     }
