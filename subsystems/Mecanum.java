@@ -82,6 +82,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     private final double CTRL_THRESHOLD = 0.1;
     private final double AUTO_MAX_SPEED = 0.5;
+    private final double AUTO_ERR = 20;
 
     //region SubSystem
     @Override
@@ -218,7 +219,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         EncoderPosition current  = new EncoderPosition();
         EncoderPosition end      = startPos.fwd(ticks);
 
-        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), 40 )) {
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), AUTO_ERR )) {
             current = new EncoderPosition();
             int diffTicks = end.subtract(current).fwdTicks();
 
@@ -239,7 +240,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         EncoderPosition current  = new EncoderPosition();
         EncoderPosition end      = startPos.strafe(ticks);
 
-        while(lop.opModeIsActive() && !MoreMath.isClose( current.strafeTicks(), end.strafeTicks(), 40 )) {
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.strafeTicks(), end.strafeTicks(), AUTO_ERR )) {
             current = new EncoderPosition();
             int diffTicks = end.subtract(current).strafeTicks();
 
@@ -261,8 +262,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         EncoderPosition endStrafe= startPos.strafe(strafe);
 
         while(lop.opModeIsActive() &&
-                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), 40 ) &&
-                !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), 40 ))
+                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), AUTO_ERR ) &&
+                !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), AUTO_ERR ))
         {
             current = new EncoderPosition();
             int diffFwd = endFwd.subtract(current).fwdTicks();
@@ -286,6 +287,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         double diff = targetHeading - i.getAbsoluteHeading();
         return MoreMath.clip( -diff / 45, -.5, .5 );
     }
+
 
 
     //region Macro
