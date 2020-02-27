@@ -2,8 +2,10 @@ package quasar.prod;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import quasar.lib.AutoTransitioner;
+import quasar.lib.macro.PartialMacroPlayer;
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.*;
 
@@ -18,9 +20,71 @@ public final class Autonomous3B extends LinearOpMode {
     private IMUHandler i              = new IMUHandler();
     private VuforiaPositionDetector v = new VuforiaPositionDetector();
 
+    private PartialMacroPlayer pm;
+
+    private ColorSensor left, right;
+
+    private enum Side {
+        RED, BLUE;
+        public Side swap() {
+            if(this == RED) return BLUE;
+            return RED;
+        }
+    }
+    private Side side = Side.RED;
+    private long delayMS = 0;
+
     @Override
     public void runOpMode() {
 
+        initSubSystems();
+        initMiscellaneous();
+        chooseOptions();
+
+        telemetry.addLine("All Subsystems initialized successfully :D");
+        telemetry.addData("Side", side == Side.RED ? "RED" : "BLUE");
+        telemetry.addData("Delay (ms)", delayMS);
+        telemetry.update();
+
+        waitForStart();
+        say("Started");
+
+        m.moveXYTicks(-1400,800, 0, i);
+        sleep(1000);
+        m.strafeTicks(300,0, i);
+        pm.playMacro();
+    }
+
+    private void strafeUntilCloseToBlock() {
+
+    }
+
+    private void chooseOptions() {
+
+        boolean prevX = true;
+        while(!isStopRequested() && (!gamepad1.a || gamepad1.start)) {
+            if(gamepad1.x && !prevX) side = side.swap();
+            prevX = gamepad1.x;
+
+            telemetry.addLine("Which side are you on?");
+            telemetry.addData("Current Side", side);
+            telemetry.addLine("Press [X] to switch, [A] to select");
+            telemetry.update();
+        }
+
+        while(gamepad1.a && !isStopRequested()) idle(); //This ensures that we the second loop runs / you press A twice
+
+        while(!isStopRequested() && !gamepad1.a) {
+            double delta = -gamepad1.left_stick_y;
+            delta = Math.abs(delta) > 0.1 ? delta : 0;
+            delayMS += delta;
+
+            telemetry.addLine("How much delay do you want initially?");
+            telemetry.addData("Delay (ms)", delayMS);
+            telemetry.addLine("Use [LEFT JOYSTICK] to add/subtract delay.  Press [A] to select");
+        }
+    }
+    private void initSubSystems() {
         //If we put the multithreaded systems first, that gives it a bit more time to start up
         i.create(this, false);
         i.start();
@@ -41,15 +105,22 @@ public final class Autonomous3B extends LinearOpMode {
         p.create(this);
         p.init();
         say("Platform Mover Ready");
+    }
+    private void initMiscellaneous() {
+        pm = new PartialMacroPlayer(
+                this,
+                "AUTO Platform Mover",
+                m, c, l, p
+        );
+        pm.init();
+        say("Macro Ready");
+
+        left  = hardwareMap.colorSensor.get("colorLeft");
+        right = hardwareMap.colorSensor.get("colorRight");
+        say("Sensors Ready");
 
         AutoTransitioner.transitionOnStop(this, "Quasar TeleOp");
         say("Transitioner Ready");
-
-        say("All Subsystems initialized successfully\n\nWaiting for Start");
-        waitForStart();
-        say("Started");
-
-        m.moveXYTicks(-1000,1100, 0, i);
     }
 
     private void say(Object o) {
