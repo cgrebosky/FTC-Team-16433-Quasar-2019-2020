@@ -60,7 +60,7 @@ class MacroPlayer: LinearOpMode() {
         val len = MacroState.potentialFileNames.size
         var index = 0
         var currentOption = MacroState.potentialFileNames[index]
-        while(!gamepad1.a) {
+        while(!gamepad1.a && !isStopRequested) {
 
             if(GamepadState.press(gamepad1.dpad_up, prevUp)) index = MoreMath.tapeInc(0, len-1, index)
             if(GamepadState.press(gamepad1.dpad_down, prevDown)) index = MoreMath.tapeDec(0,len-1,index)
