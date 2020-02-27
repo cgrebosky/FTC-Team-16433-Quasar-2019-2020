@@ -16,8 +16,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.C
 @Disabled
 public final class ColorSensorTool extends OpMode {
 
-    ColorSensor left, right;
-    DistanceSensor distance, leftDist, rightDist;
+    private ColorSensor left, right;
+    private DistanceSensor distance, leftDist, rightDist;
 
     @Override
     public void init() {
