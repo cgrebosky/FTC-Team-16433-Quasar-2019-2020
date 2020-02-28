@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import quasar.lib.GamepadState;
 
-
+//TODO: Fix this class, it has too many skeletons in it's closet...
 public abstract class ThreadSubSystem extends Thread {
     //region Variables
     protected LinearOpMode lop; //We only need to use LinearOpModes since this class takes care of looping...
