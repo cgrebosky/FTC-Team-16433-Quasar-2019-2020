@@ -1,8 +1,11 @@
 package quasar.prod;
 
+import android.graphics.Paint;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import quasar.subsystems.CapstoneDepositor;
 import quasar.subsystems.Collector;
 import quasar.subsystems.Lift;
 import quasar.subsystems.Mecanum;
@@ -15,6 +18,7 @@ public class QuasarTeleOp extends OpMode {
     private Lift l          = new Lift();
     private Mecanum m       = new Mecanum();
     private PlatformMover p = new PlatformMover();
+    private CapstoneDepositor cd = new CapstoneDepositor();
 
     @Override
     public void init() {
@@ -22,11 +26,13 @@ public class QuasarTeleOp extends OpMode {
         l.create(this);
         m.create(this);
         p.create(this);
+        cd.create(this);
 
         c.init();
         l.init();
         m.init();
         p.init();
+        cd.init();
     }
 
     @Override
@@ -35,6 +41,7 @@ public class QuasarTeleOp extends OpMode {
         l.loop();
         m.loop();
         p.loop();
+        cd.loop();
 
         telemetry.update();
     }
@@ -45,5 +52,6 @@ public class QuasarTeleOp extends OpMode {
         l.stop();
         m.stop();
         p.stop();
+        cd.stop();
     }
 }
