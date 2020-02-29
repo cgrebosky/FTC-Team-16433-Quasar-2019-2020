@@ -100,8 +100,7 @@ public final class Autonomous3B extends LinearOpMode {
     private void initMiscellaneous() {
         pm = new PartialMacroPlayer(
                 this,
-                "AUTO Platform Mover",
-                m, c, l, p
+                "AUTO Platform Mover"
         );
         pm.init();
         say("Macro Ready");

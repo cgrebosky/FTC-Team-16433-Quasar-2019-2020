@@ -9,8 +9,9 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
 
     private Servo leftArm, leftClaw, rightArm, rightClaw;
 
+    //Bruh they used continuous servos for the arms... I can't program this...
     private double LEFT_ARM_UP = 0, LEFT_ARM_DOWN = 0, RIGHT_ARM_UP = 0, RIGHT_ARM_DOWN = 0;
-    private double LEFT_CLAW_CLOSED = 0, LEFT_CLAW_OPEN = 0, RIGHT_CLAW_CLOSED = 0, RIGHT_CLAW_OPEN = 0;
+    private double LEFT_CLAW_CLOSED = 0.18, LEFT_CLAW_OPEN = 0.35, RIGHT_CLAW_CLOSED = 0.15, RIGHT_CLAW_OPEN = 0.31;
 
     @Override
     public void init() {
@@ -36,6 +37,36 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
     @Override
     public void stop() {
         //Again, nothing important here.  I've found that doing servo stuff at stop() causes more pain than gain
+    }
+
+    @Auto public void raiseLeft() {
+        leftArm.setPosition(LEFT_ARM_UP);
+        leftClaw.setPosition(LEFT_CLAW_CLOSED);
+    }
+    @Auto public void openLeft() {
+        leftClaw.setPosition(LEFT_CLAW_OPEN);
+    }
+    @Auto public void lowerLeft() {
+        leftArm.setPosition(LEFT_ARM_DOWN);
+        leftClaw.setPosition(LEFT_CLAW_OPEN);
+    }
+    @Auto public void closeLeft() {
+        leftClaw.setPosition(LEFT_CLAW_CLOSED);
+    }
+
+    @Auto public void raiseRight() {
+        rightArm.setPosition(RIGHT_ARM_UP);
+        rightClaw.setPosition(RIGHT_CLAW_CLOSED);
+    }
+    @Auto public void openRight() {
+        rightClaw.setPosition(RIGHT_CLAW_OPEN);
+    }
+    @Auto public void lowerRight() {
+        rightArm.setPosition(RIGHT_ARM_DOWN);
+        rightClaw.setPosition(RIGHT_CLAW_OPEN);
+    }
+    @Auto public void closeRight() {
+        rightClaw.setPosition(RIGHT_CLAW_CLOSED);
     }
 
     //region Macro

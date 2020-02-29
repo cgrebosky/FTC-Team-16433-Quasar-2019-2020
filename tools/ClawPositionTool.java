@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Claw Position Tool", group = "Tools")
+@Disabled
 public final class ClawPositionTool extends OpMode {
 
     private double clawPos, anglePos;

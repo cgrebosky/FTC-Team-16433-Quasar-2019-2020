@@ -12,7 +12,7 @@ import quasar.subsystems.Mecanum;
 import quasar.subsystems.PlatformMover;
 
 @TeleOp(name = "Quasar TeleOp", group = "Prod")
-public class QuasarTeleOp extends OpMode {
+public final class QuasarTeleOp extends OpMode {
 
     @Override
     public void init() {
