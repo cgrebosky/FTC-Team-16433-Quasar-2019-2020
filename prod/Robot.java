@@ -9,7 +9,7 @@ import quasar.subsystems.*;
 import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.VuforiaPositionDetector;
 
-public final class Robot implements MacroSystem {
+public final class Robot {
     private static Collector co = new Collector();
     private static Lift li = new Lift();
     private static Mecanum me = new Mecanum();
@@ -89,18 +89,20 @@ public final class Robot implements MacroSystem {
         opm.telemetry.update();
     }
 
-    @Override
-    public void recordMacroState() {
+    //Unfortunately, we don't inherit MacroSystem here, because these are static methods.  I'm not
+    //sure how to get around this from an OOP perspective
+    public static void recordMacroState() {
         co.recordMacroState();
         li.recordMacroState();
         me.recordMacroState();
         pm.recordMacroState();
+        ab.recordMacroState();
     }
-    @Override
-    public void playMacroState(MacroState m) {
-        co.recordMacroState();
-        li.recordMacroState();
-        me.recordMacroState();
-        pm.recordMacroState();
+    public static void playMacroState(MacroState m) {
+        co.playMacroState(m);
+        li.playMacroState(m);
+        me.playMacroState(m);
+        pm.playMacroState(m);
+        ab.playMacroState(m);
     }
 }

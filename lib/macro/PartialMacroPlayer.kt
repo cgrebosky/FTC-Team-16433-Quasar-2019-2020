@@ -1,6 +1,7 @@
 package quasar.lib.macro
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import quasar.prod.Robot
 import quasar.subsystems.Collector
 import quasar.subsystems.Lift
 import quasar.subsystems.Mecanum
@@ -12,11 +13,7 @@ import java.util.*
 
 class PartialMacroPlayer(
         val lop: LinearOpMode,
-        private val fileName: String,
-        private val me: Mecanum,
-        private val co: Collector,
-        private val li: Lift,
-        private val pf: PlatformMover) {
+        private val fileName: String) {
 
     private var recording = LinkedList<MacroState>()
 
@@ -43,9 +40,6 @@ class PartialMacroPlayer(
         recording = ois.readObject() as LinkedList<MacroState>
     }
     private fun actState(m: MacroState) {
-        me.playMacroState(m)
-        pf.playMacroState(m)
-        co.playMacroState(m)
-        li.playMacroState(m)
+        Robot.playMacroState(m)
     }
 }

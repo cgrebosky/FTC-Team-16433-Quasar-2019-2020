@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
+import quasar.prod.Robot
 import quasar.subsystems.Collector
 import quasar.subsystems.Lift
 import quasar.subsystems.Mecanum
@@ -19,11 +20,6 @@ import java.util.*
 class MacroPlayer: LinearOpMode() {
 
     private lateinit var recording: LinkedList<MacroState>
-
-    private val me = Mecanum()
-    private val pf = PlatformMover()
-    private val co = Collector()
-    private val li = Lift()
 
     override fun runOpMode() {
         initialize()
@@ -86,23 +82,11 @@ class MacroPlayer: LinearOpMode() {
         telePrint("Ready")
     }
     private fun initRobot() {
-        me.create(this)
-        me.init()
-
-        pf.create(this)
-        pf.init()
-
-        co.create(this)
-        co.init()
-
-        li.create(this)
-        li.init()
+        Robot.create(this)
+        Robot.init()
     }
 
     private fun actState(m: MacroState) {
-        me.playMacroState(m)
-        pf.playMacroState(m)
-        co.playMacroState(m)
-        li.playMacroState(m)
+        Robot.playMacroState(m)
     }
 }

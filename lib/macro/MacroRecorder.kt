@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
 import quasar.lib.macro.MacroState.Companion.currentMacroState
+import quasar.prod.Robot
 import quasar.subsystems.Collector
 import quasar.subsystems.Lift
 import quasar.subsystems.Mecanum
@@ -25,29 +26,14 @@ class MacroRecorder: OpMode() {
 
     private var state = State.UNINITIALIZED
 
-    private val me = Mecanum()
-    private val pf = PlatformMover()
-    private val co = Collector()
-    private val li = Lift()
 
     init {
         msStuckDetectInit = 50000
     }
 
     override fun init() {
-        //region INIT CODE HERE
-        me.create(this)
-        me.init()
-
-        pf.create(this)
-        pf.init()
-
-        co.create(this)
-        co.init()
-
-        li.create(this)
-        li.init()
-        //endregion
+        Robot.create(this)
+        Robot.init()
 
         var prevUp = gamepad1.dpad_up
         var prevDown = gamepad1.dpad_down
@@ -74,12 +60,8 @@ class MacroRecorder: OpMode() {
         telemetry.update()
     }
     override fun loop() {
-        //region LOOP CODE HERE
-        me.loop()
-        pf.loop()
-        co.loop()
-        li.loop()
-        //endregion
+        Robot.loop()
+
         recordData()
 
         if(state == State.UNINITIALIZED && gamepad1.a) state = State.RUNNING
@@ -93,10 +75,7 @@ class MacroRecorder: OpMode() {
         printTelemetry()
     }
     override fun stop() {
-        me.stop()
-        pf.stop()
-        co.stop()
-        li.stop()
+        Robot.stop()
     }
     private fun serializeData() {
         //"reindex" the data so that time starts at 0.  This just makes it easier to deal with.
@@ -118,10 +97,7 @@ class MacroRecorder: OpMode() {
         telemetry.update()
     }
     private fun recordData() {
-        me.recordMacroState()
-        pf.recordMacroState()
-        co.recordMacroState()
-        li.recordMacroState()
+        Robot.recordMacroState()
 
         if(state == State.RUNNING)
             recording.add(currentMacroState.clone(System.currentTimeMillis()))
