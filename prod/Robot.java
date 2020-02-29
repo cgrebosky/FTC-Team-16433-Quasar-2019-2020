@@ -131,7 +131,7 @@ public final class Robot {
     }
 
     @SubSystem.Auto
-    public void fwdTicks(int ticks, double targetHeading) {
+    public static void fwdTicks(int ticks, double targetHeading) {
 
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
@@ -154,7 +154,7 @@ public final class Robot {
     }
     //Positive ticks means going to the RIGHT, if we have collectors at front
     @SubSystem.Auto
-    public void strafeTicks(int ticks, double targetHeading, IMUHandler i) {
+    public static void strafeTicks(int ticks, double targetHeading) {
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
         Mecanum.EncoderPosition end      = startPos.strafe(ticks);
@@ -169,19 +169,21 @@ public final class Robot {
             me.setPowers(0, strafe, turn);
 
             lop.telemetry.addData("DiffTicks", diffTicks);
-            lop.telemetry.addData("Heading", i.getAbsoluteHeading());
+            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
             lop.telemetry.addData("Target Heading", targetHeading);
             lop.telemetry.update();
         }
     }
     @SubSystem.Auto
-    public void moveXYTicks(int strafe, int fwd, double targetHeading) {
+    public static void moveXYTicks(int strafe, int fwd, double targetHeading) {
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
         Mecanum.EncoderPosition endFwd   = startPos.fwd(fwd);
         Mecanum.EncoderPosition endStrafe= startPos.strafe(strafe);
 
-        while(lop.opModeIsActive() &&
+        long t = System.currentTimeMillis() + 5000;
+        while(System.currentTimeMillis() < t &&
+                lop.opModeIsActive() &&
                 !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), Mecanum.AUTO_ERR ) &&
                 !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), Mecanum.AUTO_ERR ))
         {
@@ -200,10 +202,11 @@ public final class Robot {
             lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
             lop.telemetry.addData("Target Heading", targetHeading);
             lop.telemetry.update();
+            lop.idle();
         }
     }
     @SubSystem.Auto
-    public void strafeUntilCloseToBlock(ColorSensor color, Side s) {
+    public static void strafeUntilCloseToBlock(ColorSensor color, Side s) {
         double pwr = 0.4;
         if(s == Side.RED) pwr = -pwr;
         me.setPowers(0, pwr, 0);
@@ -213,7 +216,7 @@ public final class Robot {
 
     }
 
-    private double turnForStableAngle(double targetHeading) {
+    private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
         return MoreMath.clip( -diff / 45, -.5, .5 );
     }

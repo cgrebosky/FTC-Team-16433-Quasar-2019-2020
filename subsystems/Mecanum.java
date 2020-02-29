@@ -42,7 +42,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
             this.br = Mecanum.this.br.getCurrentPosition();
         }
 
-        EncoderPosition fwd(int ticks) {
+        public EncoderPosition fwd(int ticks) {
             return new EncoderPosition(
                     fl + ticks,
                     fr + ticks,
@@ -50,7 +50,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
                     br + ticks
             );
         }
-        EncoderPosition strafe(int ticks) {
+        public EncoderPosition strafe(int ticks) {
             return new EncoderPosition(
                     fl + ticks,
                     fr - ticks,
@@ -82,9 +82,9 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     private boolean slowMode = false;
 
-    private final double CTRL_THRESHOLD = 0.1;
-    private final double AUTO_MAX_SPEED = 0.5;
-    private final double AUTO_ERR = 20;
+    public static final double CTRL_THRESHOLD = 0.1;
+    public static final double AUTO_MAX_SPEED = 0.5;
+    public static final double AUTO_ERR = 20;
 
     //region SubSystem
     @Override
@@ -194,112 +194,6 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         setNumericalPowers();
         setMotorPowers();
     }
-
-    @Auto public void goToPositionVuforia(double endX, double endY, IMUHandler i, VuforiaPositionDetector pd) {
-        double startAngle = i.getAbsoluteHeading();
-        while(lop.opModeIsActive() && pd.imageIsVisible()) {
-            double angle = i.getAbsoluteHeading();
-            double diff = startAngle - angle;
-            double turn = MoreMath.clip(-diff / 45, -0.6, 0.6);
-
-            double x = pd.getX();
-            double y = pd.getY();
-            double dx = endX - x;
-            double dy = endY - y;
-
-            double dmax = Math.max( Math.abs(dy), Math.abs(dx) );
-            double xPow = MoreMath.clip( dx / dmax, -0.3, 0.3);
-            double yPow = MoreMath.clip( dy / dmax, -0.3, 0.3);
-
-            setPowers(-xPow, yPow, turn);
-        }
-    }
-
-    @Auto public void fwdTicks(int ticks, double targetHeading, IMUHandler i) {
-
-        EncoderPosition startPos = new EncoderPosition();
-        EncoderPosition current  = new EncoderPosition();
-        EncoderPosition end      = startPos.fwd(ticks);
-
-        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), AUTO_ERR )) {
-            current = new EncoderPosition();
-            int diffTicks = end.subtract(current).fwdTicks();
-
-            double turn = turnForStableAngle(targetHeading, i);
-            double fwd  = MoreMath.clip(diffTicks / 50, -AUTO_MAX_SPEED, AUTO_MAX_SPEED);
-
-            setPowers(fwd,0, turn);
-
-            telemetry.addData("DiffTicks", diffTicks);
-            telemetry.addData("Heading", i.getAbsoluteHeading());
-            telemetry.addData("Target Heading", targetHeading);
-            telemetry.update();
-        }
-    }
-    //Positive ticks means going to the RIGHT, if we have collectors at front
-    @Auto public void strafeTicks(int ticks, double targetHeading, IMUHandler i) {
-        EncoderPosition startPos = new EncoderPosition();
-        EncoderPosition current  = new EncoderPosition();
-        EncoderPosition end      = startPos.strafe(ticks);
-
-        while(lop.opModeIsActive() && !MoreMath.isClose( current.strafeTicks(), end.strafeTicks(), AUTO_ERR )) {
-            current = new EncoderPosition();
-            int diffTicks = end.subtract(current).strafeTicks();
-
-            double turn   = turnForStableAngle(targetHeading, i);
-            double strafe = MoreMath.clip(diffTicks / 50, -AUTO_MAX_SPEED, AUTO_MAX_SPEED);
-
-            setPowers(0, strafe, turn);
-
-            telemetry.addData("DiffTicks", diffTicks);
-            telemetry.addData("Heading", i.getAbsoluteHeading());
-            telemetry.addData("Target Heading", targetHeading);
-            telemetry.update();
-        }
-    }
-    @Auto public void moveXYTicks(int strafe, int fwd, double targetHeading, IMUHandler i) {
-        EncoderPosition startPos = new EncoderPosition();
-        EncoderPosition current  = new EncoderPosition();
-        EncoderPosition endFwd   = startPos.fwd(fwd);
-        EncoderPosition endStrafe= startPos.strafe(strafe);
-
-        while(lop.opModeIsActive() &&
-                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), AUTO_ERR ) &&
-                !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), AUTO_ERR ))
-        {
-            current = new EncoderPosition();
-            int diffFwd = endFwd.subtract(current).fwdTicks();
-            int diffStrafe = endStrafe.subtract(current).strafeTicks();
-
-            double turn      = turnForStableAngle(targetHeading, i);
-            double fwdPwr    = MoreMath.clip(diffFwd / 50, -AUTO_MAX_SPEED, AUTO_MAX_SPEED);
-            double strafePwr = MoreMath.clip(diffStrafe / 50, -AUTO_MAX_SPEED, AUTO_MAX_SPEED);
-
-            setPowers(fwdPwr, strafePwr, turn);
-
-            telemetry.addData("Diff FWD", diffFwd);
-            telemetry.addData("Diff STRAFE", diffStrafe);
-            telemetry.addData("Heading", i.getAbsoluteHeading());
-            telemetry.addData("Target Heading", targetHeading);
-            telemetry.update();
-        }
-    }
-    @Auto public void strafeUntilCloseToBlock(ColorSensor color, IMUHandler imu, Side s) {
-        double pwr = 0.4;
-        if(s == Side.RED) pwr = -pwr;
-        setPowers(0, pwr, 0);
-
-        while(lop.opModeIsActive() && color.red() > 40 && color.red() < 50) setPowers(0, pwr, turnForStableAngle(0, imu));
-        setPowers(0,0,0);
-
-    }
-
-    private double turnForStableAngle(double targetHeading, IMUHandler i) {
-        double diff = targetHeading - i.getAbsoluteHeading();
-        return MoreMath.clip( -diff / 45, -.5, .5 );
-    }
-
-
 
     //region Macro
     @Override
