@@ -17,12 +17,12 @@ import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.C
 public final class Robot {
     private static Collector co = new Collector();
     private static Lift li = new Lift();
-    public static Mecanum me = new Mecanum();
+    private static Mecanum me = new Mecanum();
     private static PlatformMover pm = new PlatformMover();
     private static CapstoneDepositor cp = new CapstoneDepositor();
     private static AutoBlockMover ab = new AutoBlockMover();
     
-    public static IMUHandler imu = new IMUHandler();
+    private static IMUHandler imu = new IMUHandler();
     private static VuforiaPositionDetector vpd = new VuforiaPositionDetector();
 
     private static LinearOpMode lop = null;
@@ -115,7 +115,7 @@ public final class Robot {
 
     //region Autonomous
     @SubSystem.Auto
-    public void goToPositionVuforia(double endX, double endY) {
+    void goToPositionVuforia(double endX, double endY) {
         double startAngle = imu.getAbsoluteHeading();
         while(lop.opModeIsActive() && vpd.imageIsVisible()) {
             double angle = imu.getAbsoluteHeading();
@@ -136,7 +136,7 @@ public final class Robot {
     }
 
     @SubSystem.Auto
-    public static void fwdTicks(int ticks, double targetHeading) {
+    static void fwdTicks(int ticks, double targetHeading) {
 
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
@@ -159,7 +159,7 @@ public final class Robot {
     }
     //Positive ticks means going to the RIGHT, if we have collectors at front
     @SubSystem.Auto
-    public static void strafeTicks(int ticks, double targetHeading) {
+    static void strafeTicks(int ticks, double targetHeading) {
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
         Mecanum.EncoderPosition end      = startPos.strafe(ticks);
@@ -211,7 +211,7 @@ public final class Robot {
         }
     }
     @SubSystem.Auto
-    public static void strafeUntilCloseToBlock(DistanceSensor dist, Side s) {
+    static void strafeUntilCloseToBlock(DistanceSensor dist, Side s) {
         double pwr = 0.3;
         if(s == Side.BLUE) pwr = -pwr;
         me.setPowers(0, pwr, 0);
@@ -223,7 +223,7 @@ public final class Robot {
         me.setPowers(0,0,0);
 
     }
-    public static void findBlock(ColorSensor c, DistanceSensor d, Side s) {
+    static void findBlock(ColorSensor c, DistanceSensor d, Side s) {
         while(c.red() > 30 && lop.opModeIsActive()) {
             me.setPowers(-0.3, strafeForStableDistance(d, 15), turnForStableAngle(0));
         }
@@ -241,14 +241,14 @@ public final class Robot {
 
         strafeTicks(-300, 0);
     }
-    public static void fwdUntilAtWall(DistanceSensor d) {
+    static void fwdUntilAtWall(DistanceSensor d) {
         while(d.getDistance(CM) > 20 && lop.opModeIsActive()) {
             double fwd = MoreMath.clip(d.getDistance(CM) / 200, 0.3, 1);
             me.setPowers(fwd, 0, turnForStableAngle(0));
         }
     }
 
-    public static void releaseBlock(Side s) {
+    static void releaseBlock(Side s) {
         if(s == Side.RED) ab.openRight();
         else ab.openLeft();
     }
