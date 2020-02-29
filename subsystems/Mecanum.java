@@ -83,8 +83,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     private boolean slowMode = false;
 
     public static final double CTRL_THRESHOLD = 0.1;
-    public static final double AUTO_MAX_SPEED = 0.5;
-    public static final double AUTO_ERR = 20;
+    public static final double AUTO_MAX_SPEED = 0.8;
+    public static final double AUTO_ERR = 30;
 
     //region SubSystem
     @Override

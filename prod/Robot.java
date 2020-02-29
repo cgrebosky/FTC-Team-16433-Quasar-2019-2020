@@ -147,7 +147,7 @@ public final class Robot {
             int diffTicks = end.subtract(current).fwdTicks();
 
             double turn = turnForStableAngle(targetHeading);
-            double fwd  = MoreMath.clip(diffTicks / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double fwd  = MoreMath.clip(((double) diffTicks / 250), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
 
             me.setPowers(fwd,0, turn);
 
@@ -216,7 +216,7 @@ public final class Robot {
         if(s == Side.BLUE) pwr = -pwr;
         me.setPowers(0, pwr, 0);
 
-        while(lop.opModeIsActive() && (dist.getDistance(CM) > 15 || Double.isNaN(dist.getDistance(CM)))) {
+        while(lop.opModeIsActive() && (dist.getDistance(CM) > 30 || Double.isNaN(dist.getDistance(CM)))) {
             me.setPowers(0, pwr, turnForStableAngle(0));
             lop.idle();
         }
@@ -231,19 +231,19 @@ public final class Robot {
         fwdTicks(100, 0);
 
         if(s == Side.RED) {
-            ab.lowerRight();
+            ab.rightArm.setPosition(ab.RIGHT_ARM_DOWN);
             lop.sleep(500);
-            ab.closeRight();
-            lop.sleep(200);
-            ab.raiseRight();
+            ab.rightClaw.setPosition(ab.RIGHT_CLAW_CLOSED);
+            lop.sleep(300);
+            ab.rightArm.setPosition(ab.RIGHT_ARM_UP);
             lop.sleep(200);
         }
 
-        strafeTicks(-400, 0);
+        strafeTicks(-300, 0);
     }
     public static void fwdUntilAtWall(DistanceSensor d) {
-        while(d.getDistance(CM) > 50 && lop.opModeIsActive()) {
-            double fwd = MoreMath.clip(d.getDistance(CM) / 200, -1, 1);
+        while(d.getDistance(CM) > 20 && lop.opModeIsActive()) {
+            double fwd = MoreMath.clip(d.getDistance(CM) / 200, 0.3, 1);
             me.setPowers(fwd, 0, turnForStableAngle(0));
         }
     }
@@ -255,12 +255,12 @@ public final class Robot {
 
     private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
-        final double P = 0.15;
+        final double P = 0.015;
         return MoreMath.clip( -diff * P, -.5, .5 );
     }
     private static double strafeForStableDistance(DistanceSensor d, double targetDist) {
         double diff = d.getDistance(CM) - targetDist;
-        final double P = 0.03;
+        final double P = 0.02;
         return P * diff;
     }
 

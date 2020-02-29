@@ -7,11 +7,11 @@ import quasar.lib.macro.MacroSystem;
 
 public final class AutoBlockMover extends SubSystem implements MacroSystem {
 
-    private Servo leftArm, leftClaw, rightArm, rightClaw;
+    public Servo leftArm, leftClaw, rightArm, rightClaw;
 
     //Bruh they used continuous servos for the arms... I can't program this...
-    private double LEFT_ARM_UP = 0.37, LEFT_ARM_DOWN = 0.92, RIGHT_ARM_UP = 0.52, RIGHT_ARM_DOWN = 0;
-    private double LEFT_CLAW_CLOSED = 0.18, LEFT_CLAW_OPEN = 0.35, RIGHT_CLAW_CLOSED = 0.15, RIGHT_CLAW_OPEN = 0.31;
+    public double LEFT_ARM_UP = 0.37, LEFT_ARM_DOWN = 0.92, RIGHT_ARM_UP = 0.52, RIGHT_ARM_DOWN = 0;
+    public double LEFT_CLAW_CLOSED = 0.35, LEFT_CLAW_OPEN = 0.13, RIGHT_CLAW_CLOSED = 0.15, RIGHT_CLAW_OPEN = 0.31;
 
     @Override
     public void init() {

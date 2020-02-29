@@ -3,26 +3,19 @@ package quasar.prod;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import quasar.lib.AutoTransitioner;
 import quasar.lib.macro.PartialMacroPlayer;
-import quasar.subsystems.*;
-import quasar.subsystems.threaded.*;
+
 
 @Autonomous(name = "3 Block Autonomous", group = "prod")
 public final class Autonomous3B extends LinearOpMode {
 
-    private Collector c     = new Collector();
-    private Mecanum m       = new Mecanum();
-    private Lift l          = new Lift();
-    private PlatformMover p = new PlatformMover();
-
-    private IMUHandler i              = new IMUHandler();
-    private VuforiaPositionDetector v = new VuforiaPositionDetector();
-
     private PartialMacroPlayer pm;
 
     private ColorSensor color;
+    private DistanceSensor distanceCol, distance;
 
     private Side side = Side.RED;
     private long delayMS = 0;
@@ -30,7 +23,6 @@ public final class Autonomous3B extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        initSubSystems();
         chooseOptions();
         initMiscellaneous();
 
@@ -42,12 +34,23 @@ public final class Autonomous3B extends LinearOpMode {
         waitForStart();
         say("Started");
 
-        m.moveXYTicks(-1400,800, 0, i);
-        sleep(1000);
-        m.strafeUntilCloseToBlock(color, i, side);
+        Robot.strafeTicks(1350, 0);
+        Robot.findBlock(color, distanceCol, side);
+        Robot.fwdTicks(-3400, 0);
+        Robot.strafeTicks(300,0);
+        Robot.releaseBlock(side);
+        Robot.strafeTicks(-400,0);
+        Robot.fwdUntilAtWall(distance);
+        Robot.fwdTicks(100, 0);
+        Robot.strafeUntilCloseToBlock(distanceCol, side);
+        Robot.findBlock(color, distanceCol, side);
+        Robot.strafeTicks(-100, 0);
+        Robot.fwdTicks(-5000, 0);
+        Robot.strafeTicks(300,0);
+        Robot.releaseBlock(side);
+        Robot.strafeTicks(-300, 0);
         pm.playMacro();
     }
-
 
     private void chooseOptions() {
 
@@ -64,40 +67,23 @@ public final class Autonomous3B extends LinearOpMode {
 
         while(gamepad1.a && !isStopRequested()) idle(); //This ensures that we the second loop runs / you press A twice
 
+        boolean prevDPadPressed = true;
         while(!isStopRequested() && !gamepad1.a) {
-            double delta = -gamepad1.left_stick_y;
-            delta = Math.abs(delta) > 0.1 ? delta : 0;
-            delayMS += delta;
+            if(gamepad1.dpad_up && !prevDPadPressed) delayMS += 250;
+            if(gamepad1.dpad_down && !prevDPadPressed) delayMS -= 250;
+            prevDPadPressed = gamepad1.dpad_up || gamepad1.dpad_down;
 
             telemetry.addLine("How much delay do you want initially?");
             telemetry.addData("Delay (ms)", delayMS);
-            telemetry.addLine("Use [LEFT JOYSTICK] to add/subtract delay.  Press [A] to select");
+            telemetry.addLine("Use [DPAD] to add/subtract delay.  Press [A] to select");
             telemetry.update();
         }
     }
-    private void initSubSystems() {
-        //If we put the multithreaded systems first, that gives it a bit more time to start up
-        i.create(this, false);
-        i.start();
-        say("IMU Ready");
-        v.create(this, false);
-        v.start();
-        say("Vuforia Ready");
-
-        c.create(this);
-        c.init();
-        say("Collector Ready");
-        m.create(this);
-        m.init();
-        say("Mecanum Ready");
-        l.create(this);
-        l.init();
-        say("Lift Ready");
-        p.create(this);
-        p.init();
-        say("Platform Mover Ready");
-    }
     private void initMiscellaneous() {
+        Robot.create(this);
+        Robot.autoInit();
+        say("Robot initialized");
+
         pm = new PartialMacroPlayer(
                 this,
                 "AUTO Platform Mover"
@@ -105,8 +91,15 @@ public final class Autonomous3B extends LinearOpMode {
         pm.init();
         say("Macro Ready");
 
-        if(side == Side.RED) color = hardwareMap.colorSensor.get("colorLeft");
-        else color = hardwareMap.colorSensor.get("colorRight");
+        distance = hardwareMap.get(DistanceSensor.class, "distance");
+        if(side == Side.RED) {
+            color = hardwareMap.colorSensor.get("colorRight");
+            distanceCol = hardwareMap.get(DistanceSensor.class, "colorRight");
+        }
+        else {
+            color = hardwareMap.colorSensor.get("colorLeft");
+            distanceCol = hardwareMap.get(DistanceSensor.class, "colorLeft");
+        }
         say("Sensors Ready");
 
         AutoTransitioner.transitionOnStop(this, "Quasar TeleOp");
