@@ -15,6 +15,7 @@ public final class Robot implements MacroSystem {
     private static Mecanum me = new Mecanum();
     private static PlatformMover pm = new PlatformMover();
     private static CapstoneDepositor cp = new CapstoneDepositor();
+    private static AutoBlockMover ab = new AutoBlockMover();
     
     private static IMUHandler imu = new IMUHandler();
     private static VuforiaPositionDetector vpd = new VuforiaPositionDetector();
@@ -34,6 +35,7 @@ public final class Robot implements MacroSystem {
         me.create(opm);
         pm.create(opm);
         cp.create(opm);
+        ab.create(opm);
     }
 
     public static void autoInit() {
@@ -60,6 +62,9 @@ public final class Robot implements MacroSystem {
         
         cp.init();
         say("Capstone Depositor initialized");
+
+        ab.create(lop);
+        say("Autonomous Block Mover initialized");
     }
     public static void loop() {
         co.loop();
@@ -67,6 +72,7 @@ public final class Robot implements MacroSystem {
         me.loop();
         pm.loop();
         cp.loop();
+        ab.loop();
         opm.telemetry.update();
     }
     public static void stop() {
@@ -75,6 +81,7 @@ public final class Robot implements MacroSystem {
         me.stop();
         pm.stop();
         cp.stop();
+        ab.stop();
     }
 
     private static void say(Object o) {

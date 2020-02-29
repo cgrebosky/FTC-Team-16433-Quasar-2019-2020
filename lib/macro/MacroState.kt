@@ -22,8 +22,7 @@ data class MacroState(var time: Long): Serializable {
     //Collector
     var colLeftPow = 0.0
     var colRightPow = 0.0
-    var leftLim = 0.0
-    var rightLim = 0.0
+    var colLimiter = 0.0
     //Lift
     var liftPow = 0.0
     var extenderPow = 0.0
@@ -43,8 +42,7 @@ data class MacroState(var time: Long): Serializable {
 
         m.colLeftPow = this.colLeftPow
         m.colRightPow = this.colRightPow
-        m.leftLim = this.leftLim
-        m.rightLim = this.rightLim
+        m.colLimiter = this.colLimiter
 
         m.liftPow = this.liftPow
         m.extenderPow = this.extenderPow
