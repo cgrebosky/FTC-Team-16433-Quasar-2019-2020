@@ -7,10 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import quasar.lib.GamepadState
 import quasar.lib.MoreMath
 import quasar.prod.Robot
-import quasar.subsystems.Collector
-import quasar.subsystems.Lift
-import quasar.subsystems.Mecanum
-import quasar.subsystems.PlatformMover
 import java.io.File
 import java.io.FileInputStream
 import java.io.ObjectInputStream

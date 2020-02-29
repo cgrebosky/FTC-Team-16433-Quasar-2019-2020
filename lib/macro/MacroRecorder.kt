@@ -8,10 +8,6 @@ import quasar.lib.GamepadState
 import quasar.lib.MoreMath
 import quasar.lib.macro.MacroState.Companion.currentMacroState
 import quasar.prod.Robot
-import quasar.subsystems.Collector
-import quasar.subsystems.Lift
-import quasar.subsystems.Mecanum
-import quasar.subsystems.PlatformMover
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
