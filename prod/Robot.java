@@ -3,6 +3,7 @@ package quasar.prod;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
@@ -10,6 +11,8 @@ import quasar.lib.macro.MacroSystem;
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.VuforiaPositionDetector;
+
+import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
 
 public final class Robot {
     private static Collector co = new Collector();
@@ -19,7 +22,7 @@ public final class Robot {
     private static CapstoneDepositor cp = new CapstoneDepositor();
     private static AutoBlockMover ab = new AutoBlockMover();
     
-    private static IMUHandler imu = new IMUHandler();
+    public static IMUHandler imu = new IMUHandler();
     private static VuforiaPositionDetector vpd = new VuforiaPositionDetector();
 
     private static LinearOpMode lop = null;
@@ -42,9 +45,11 @@ public final class Robot {
 
     public static void autoInit() {
         imu.create(lop, false);
+        imu.start();
         say("IMU initialized");
 
         vpd.create(lop, false);
+        vpd.start();
         say("Vuforia Positioner initialized");
 
         init();
@@ -164,7 +169,7 @@ public final class Robot {
             int diffTicks = end.subtract(current).strafeTicks();
 
             double turn   = turnForStableAngle(targetHeading);
-            double strafe = MoreMath.clip(diffTicks / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double strafe = MoreMath.clip(( (double) diffTicks / 600), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
 
             me.setPowers(0, strafe, turn);
 
@@ -206,19 +211,58 @@ public final class Robot {
         }
     }
     @SubSystem.Auto
-    public static void strafeUntilCloseToBlock(ColorSensor color, Side s) {
-        double pwr = 0.4;
-        if(s == Side.RED) pwr = -pwr;
+    public static void strafeUntilCloseToBlock(DistanceSensor dist, Side s) {
+        double pwr = 0.3;
+        if(s == Side.BLUE) pwr = -pwr;
         me.setPowers(0, pwr, 0);
 
-        while(lop.opModeIsActive() && color.red() > 40 && color.red() < 50) me.setPowers(0, pwr, turnForStableAngle(0));
+        while(lop.opModeIsActive() && (dist.getDistance(CM) > 15 || Double.isNaN(dist.getDistance(CM)))) {
+            me.setPowers(0, pwr, turnForStableAngle(0));
+            lop.idle();
+        }
         me.setPowers(0,0,0);
 
+    }
+    public static void findBlock(ColorSensor c, DistanceSensor d, Side s) {
+        while(c.red() > 30 && lop.opModeIsActive()) {
+            me.setPowers(-0.3, strafeForStableDistance(d, 15), turnForStableAngle(0));
+        }
+        me.setPowers(0,0,0);
+        fwdTicks(100, 0);
+
+        if(s == Side.RED) {
+            ab.lowerRight();
+            lop.sleep(500);
+            ab.closeRight();
+            lop.sleep(200);
+            ab.raiseRight();
+            lop.sleep(200);
+        }
+
+        strafeTicks(-400, 0);
+    }
+    public static void fwdUntilAtWall(DistanceSensor d) {
+        while(d.getDistance(CM) > 50 && lop.opModeIsActive()) {
+            double fwd = MoreMath.clip(d.getDistance(CM) / 200, -1, 1);
+            me.setPowers(fwd, 0, turnForStableAngle(0));
+        }
+    }
+
+    public static void releaseBlock(Side s) {
+        if(s == Side.RED) ab.openRight();
+        else ab.openLeft();
     }
 
     private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
-        return MoreMath.clip( -diff / 45, -.5, .5 );
+        final double P = 0.15;
+        return MoreMath.clip( -diff * P, -.5, .5 );
     }
+    private static double strafeForStableDistance(DistanceSensor d, double targetDist) {
+        double diff = d.getDistance(CM) - targetDist;
+        final double P = 0.03;
+        return P * diff;
+    }
+
     //endregion
 }

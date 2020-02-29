@@ -13,7 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
 
 @TeleOp(name = "Color Sensor Tool", group = "Tools")
-@Disabled
 public final class ColorSensorTool extends OpMode {
 
     private ColorSensor left, right;
