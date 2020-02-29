@@ -56,6 +56,7 @@ class MacroRecorder: OpMode() {
         telemetry.update()
     }
     override fun loop() {
+        printTelemetry()
         Robot.loop()
 
         recordData()
@@ -67,8 +68,6 @@ class MacroRecorder: OpMode() {
             serializeData()
             stop()
         }
-
-        printTelemetry()
     }
     override fun stop() {
         Robot.stop()

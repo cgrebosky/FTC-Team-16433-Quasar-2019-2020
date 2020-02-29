@@ -2,7 +2,9 @@ package quasar.prod;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
+import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 import quasar.subsystems.*;
@@ -12,7 +14,7 @@ import quasar.subsystems.threaded.VuforiaPositionDetector;
 public final class Robot {
     private static Collector co = new Collector();
     private static Lift li = new Lift();
-    private static Mecanum me = new Mecanum();
+    public static Mecanum me = new Mecanum();
     private static PlatformMover pm = new PlatformMover();
     private static CapstoneDepositor cp = new CapstoneDepositor();
     private static AutoBlockMover ab = new AutoBlockMover();
@@ -63,7 +65,7 @@ public final class Robot {
         cp.init();
         say("Capstone Depositor initialized");
 
-        ab.create(lop);
+        ab.init();
         say("Autonomous Block Mover initialized");
     }
     public static void loop() {
@@ -105,4 +107,115 @@ public final class Robot {
         pm.playMacroState(m);
         ab.playMacroState(m);
     }
+
+    //region Autonomous
+    @SubSystem.Auto
+    public void goToPositionVuforia(double endX, double endY) {
+        double startAngle = imu.getAbsoluteHeading();
+        while(lop.opModeIsActive() && vpd.imageIsVisible()) {
+            double angle = imu.getAbsoluteHeading();
+            double diff = startAngle - angle;
+            double turn = MoreMath.clip(-diff / 45, -0.6, 0.6);
+
+            double x = vpd.getX();
+            double y = vpd.getY();
+            double dx = endX - x;
+            double dy = endY - y;
+
+            double dmax = Math.max( Math.abs(dy), Math.abs(dx) );
+            double xPow = MoreMath.clip( dx / dmax, -0.3, 0.3);
+            double yPow = MoreMath.clip( dy / dmax, -0.3, 0.3);
+
+            me.setPowers(-xPow, yPow, turn);
+        }
+    }
+
+    @SubSystem.Auto
+    public void fwdTicks(int ticks, double targetHeading) {
+
+        Mecanum.EncoderPosition startPos = me.new EncoderPosition();
+        Mecanum.EncoderPosition current  = me.new EncoderPosition();
+        Mecanum.EncoderPosition end      = startPos.fwd(ticks);
+
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), Mecanum.AUTO_ERR )) {
+            current = me.new EncoderPosition();
+            int diffTicks = end.subtract(current).fwdTicks();
+
+            double turn = turnForStableAngle(targetHeading);
+            double fwd  = MoreMath.clip(diffTicks / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+
+            me.setPowers(fwd,0, turn);
+
+            lop.telemetry.addData("DiffTicks", diffTicks);
+            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
+            lop.telemetry.addData("Target Heading", targetHeading);
+            lop.telemetry.update();
+        }
+    }
+    //Positive ticks means going to the RIGHT, if we have collectors at front
+    @SubSystem.Auto
+    public void strafeTicks(int ticks, double targetHeading, IMUHandler i) {
+        Mecanum.EncoderPosition startPos = me.new EncoderPosition();
+        Mecanum.EncoderPosition current  = me.new EncoderPosition();
+        Mecanum.EncoderPosition end      = startPos.strafe(ticks);
+
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.strafeTicks(), end.strafeTicks(), Mecanum.AUTO_ERR )) {
+            current = me.new EncoderPosition();
+            int diffTicks = end.subtract(current).strafeTicks();
+
+            double turn   = turnForStableAngle(targetHeading);
+            double strafe = MoreMath.clip(diffTicks / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+
+            me.setPowers(0, strafe, turn);
+
+            lop.telemetry.addData("DiffTicks", diffTicks);
+            lop.telemetry.addData("Heading", i.getAbsoluteHeading());
+            lop.telemetry.addData("Target Heading", targetHeading);
+            lop.telemetry.update();
+        }
+    }
+    @SubSystem.Auto
+    public void moveXYTicks(int strafe, int fwd, double targetHeading) {
+        Mecanum.EncoderPosition startPos = me.new EncoderPosition();
+        Mecanum.EncoderPosition current  = me.new EncoderPosition();
+        Mecanum.EncoderPosition endFwd   = startPos.fwd(fwd);
+        Mecanum.EncoderPosition endStrafe= startPos.strafe(strafe);
+
+        while(lop.opModeIsActive() &&
+                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), Mecanum.AUTO_ERR ) &&
+                !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), Mecanum.AUTO_ERR ))
+        {
+            current = me.new EncoderPosition();
+            int diffFwd = endFwd.subtract(current).fwdTicks();
+            int diffStrafe = endStrafe.subtract(current).strafeTicks();
+
+            double turn      = turnForStableAngle(targetHeading);
+            double fwdPwr    = MoreMath.clip(diffFwd / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double strafePwr = MoreMath.clip(diffStrafe / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+
+            me.setPowers(fwdPwr, strafePwr, turn);
+
+            lop.telemetry.addData("Diff FWD", diffFwd);
+            lop.telemetry.addData("Diff STRAFE", diffStrafe);
+            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
+            lop.telemetry.addData("Target Heading", targetHeading);
+            lop.telemetry.update();
+        }
+    }
+    @SubSystem.Auto
+    public void strafeUntilCloseToBlock(ColorSensor color, Side s) {
+        double pwr = 0.4;
+        if(s == Side.RED) pwr = -pwr;
+        me.setPowers(0, pwr, 0);
+
+        while(lop.opModeIsActive() && color.red() > 40 && color.red() < 50) me.setPowers(0, pwr, turnForStableAngle(0));
+        me.setPowers(0,0,0);
+
+    }
+
+    private double turnForStableAngle(double targetHeading) {
+        double diff = targetHeading - imu.getAbsoluteHeading();
+        return MoreMath.clip( -diff / 45, -.5, .5 );
+    }
+    //endregion
 }
