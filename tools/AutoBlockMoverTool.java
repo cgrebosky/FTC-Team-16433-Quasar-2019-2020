@@ -1,25 +1,32 @@
 package quasar.tools;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import quasar.prod.Side;
 import quasar.subsystems.AutoBlockMover;
+import quasar.subsystems.Mecanum;
 
 @TeleOp(name = "AutoBlockMover Tool", group = "Tools")
-public final class AutoBlockMoverTool extends OpMode {
+public final class AutoBlockMoverTool extends LinearOpMode {
     AutoBlockMover ab = new AutoBlockMover();
+    Mecanum me = new Mecanum();
 
     @Override
-    public void init() {
+    public void runOpMode() throws InterruptedException {
         ab.create(this);
         ab.init();
-    }
+        me.create(this);
+        me.init();
 
-    @Override
-    public void loop() {
-        if(gamepad1.x) ab.lowerLeft(); else ab.raiseLeft();
-        if(gamepad1.y) ab.closeLeft(); else ab.openLeft();
-        if(gamepad1.a) ab.lowerRight(); else ab.raiseRight();
-        if(gamepad1.b) ab.closeRight(); else ab.openRight();
+        waitForStart();
+
+        ab.halfLower(Side.RED);
+        sleep(3000);
+        ab.close(Side.RED);
+        sleep(200);
+        ab.raise(Side.RED);
+
     }
 }

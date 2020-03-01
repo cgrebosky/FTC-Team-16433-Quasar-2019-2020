@@ -230,27 +230,22 @@ public final class Robot {
         me.setPowers(0,0,0);
         fwdTicks(100, 0);
 
-        if(s == Side.RED) {
-            ab.rightArm.setPosition(ab.RIGHT_ARM_DOWN);
-            lop.sleep(500);
-            ab.rightClaw.setPosition(ab.RIGHT_CLAW_CLOSED);
-            lop.sleep(300);
-            ab.rightArm.setPosition(ab.RIGHT_ARM_UP);
-            lop.sleep(200);
-        }
+        ab.halfLower(s);
+        strafeTicks(100,0);
+        ab.lower(s);
+        lop.sleep(500);
+        ab.raise(s);
 
         strafeTicks(-300, 0);
+    }
+    static void releaseBlock(Side s) {
+        ab.release(s);
     }
     static void fwdUntilAtWall(DistanceSensor d) {
         while(d.getDistance(CM) > 20 && lop.opModeIsActive()) {
             double fwd = MoreMath.clip(d.getDistance(CM) / 200, 0.3, 1);
             me.setPowers(fwd, 0, turnForStableAngle(0));
         }
-    }
-
-    static void releaseBlock(Side s) {
-        if(s == Side.RED) ab.openRight();
-        else ab.openLeft();
     }
 
     private static double turnForStableAngle(double targetHeading) {

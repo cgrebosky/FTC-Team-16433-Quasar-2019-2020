@@ -4,14 +4,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
+import quasar.prod.Side;
 
 public final class AutoBlockMover extends SubSystem implements MacroSystem {
 
     public Servo leftArm, leftClaw, rightArm, rightClaw;
 
-    //Bruh they used continuous servos for the arms... I can't program this...
-    public double LEFT_ARM_UP = 0.37, LEFT_ARM_DOWN = 0.92, RIGHT_ARM_UP = 0.52, RIGHT_ARM_DOWN = 0;
-    public double LEFT_CLAW_CLOSED = 0.35, LEFT_CLAW_OPEN = 0.13, RIGHT_CLAW_CLOSED = 0.15, RIGHT_CLAW_OPEN = 0.31;
+    private double LEFT_UP  = 0.31, LEFT_HALF  = 0.77, LEFT_DOWN  = 0.93;
+    private double RIGHT_UP = 1.0, RIGHT_HALF = 0.58, RIGHT_DOWN = 0.41;
+    private double LEFT_CLOSED  = 0.35, LEFT_OPEN  = 0.11;
+    private double RIGHT_CLOSED = 0.05, RIGHT_OPEN = 0.3;
 
     @Override
     public void init() {
@@ -23,10 +25,10 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
 
     @Override
     public void loop() {
-        leftClaw.setPosition(LEFT_CLAW_CLOSED);
-        rightClaw.setPosition(RIGHT_CLAW_CLOSED);
-        leftArm.setPosition(LEFT_ARM_UP);
-        rightArm.setPosition(RIGHT_ARM_UP);
+        leftClaw.setPosition(LEFT_CLOSED);
+        rightClaw.setPosition(RIGHT_CLOSED);
+        leftArm.setPosition(LEFT_UP);
+        rightArm.setPosition(RIGHT_UP);
     }
 
     @Override
@@ -39,34 +41,30 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
         //Again, nothing important here.  I've found that doing servo stuff at stop() causes more pain than gain
     }
 
-    @Auto public void raiseLeft() {
-        leftArm.setPosition(LEFT_ARM_UP);
-        leftClaw.setPosition(LEFT_CLAW_CLOSED);
+    public void halfLower(Side s) {
+        if(s == Side.RED) {
+            rightArm.setPosition(RIGHT_HALF);
+            rightClaw.setPosition(RIGHT_OPEN);
+        } else {
+            leftArm.setPosition(LEFT_HALF);
+            leftClaw.setPosition(LEFT_OPEN);
+        }
     }
-    @Auto public void openLeft() {
-        leftClaw.setPosition(LEFT_CLAW_OPEN);
+    public void lower(Side s) {
+        if(s == Side.RED) rightArm.setPosition(RIGHT_DOWN);
+        else leftArm.setPosition(LEFT_DOWN);
     }
-    @Auto public void lowerLeft() {
-        leftArm.setPosition(LEFT_ARM_DOWN);
-        leftClaw.setPosition(LEFT_CLAW_OPEN);
+    public void close(Side s) {
+        if(s == Side.RED) rightClaw.setPosition(RIGHT_CLOSED);
+        else leftClaw.setPosition(LEFT_CLOSED);
     }
-    @Auto public void closeLeft() {
-        leftClaw.setPosition(LEFT_CLAW_CLOSED);
+    public void raise(Side s) {
+        if(s == Side.RED) rightArm.setPosition(RIGHT_UP);
+        else leftArm.setPosition(LEFT_UP);
     }
-
-    @Auto public void raiseRight() {
-        rightArm.setPosition(RIGHT_ARM_UP);
-        rightClaw.setPosition(RIGHT_CLAW_CLOSED);
-    }
-    @Auto public void openRight() {
-        rightClaw.setPosition(RIGHT_CLAW_OPEN);
-    }
-    @Auto public void lowerRight() {
-        rightArm.setPosition(RIGHT_ARM_DOWN);
-        rightClaw.setPosition(RIGHT_CLAW_OPEN);
-    }
-    @Auto public void closeRight() {
-        rightClaw.setPosition(RIGHT_CLAW_CLOSED);
+    public void release(Side s) {
+        if(s == Side.RED) rightClaw.setPosition(RIGHT_OPEN);
+        else leftClaw.setPosition(LEFT_OPEN);
     }
 
     //region Macro
