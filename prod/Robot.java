@@ -16,6 +16,12 @@ import quasar.subsystems.threaded.VuforiaPositionDetector;
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
 
 public final class Robot {
+    static Side s = Side.RED;
+    private static BlockPosition pb = BlockPosition.CENTER;
+
+    public static ColorSensor color;
+    public static DistanceSensor dist, distCol;
+
     private static Collector co = new Collector();
     private static Lift li = new Lift();
     private static Mecanum me = new Mecanum();
@@ -26,6 +32,7 @@ public final class Robot {
     private static IMUHandler imu = new IMUHandler();
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
 
+    //region Internal Stuff
     private static LinearOpMode lop = null;
     private static OpMode opm = null;
 
@@ -49,11 +56,11 @@ public final class Robot {
         imu.start();
         say("IMU initialized");
 
+        init();
+    }
+    public static void initTFOD() {
         tfs.create(lop, false);
         tfs.start();
-        say("Tensorflow initialized");
-
-        init();
     }
     public static void init() {
         co.init();
@@ -74,6 +81,18 @@ public final class Robot {
         ab.init();
         say("Autonomous Block Mover initialized");
     }
+    //You MUST set the side before calling this
+    public static void initSensors() {
+        dist = lop.hardwareMap.get(DistanceSensor.class, "distance");
+        if(Robot.s == Side.RED) {
+            color = lop.hardwareMap.colorSensor.get("colorRight");
+            distCol = lop.hardwareMap.get(DistanceSensor.class, "colorRight");
+        }
+        else {
+            color = lop.hardwareMap.colorSensor.get("colorLeft");
+            distCol = lop.hardwareMap.get(DistanceSensor.class, "colorLeft");
+        }
+    }
     public static void loop() {
         co.loop();
         li.loop();
@@ -90,13 +109,15 @@ public final class Robot {
         pm.stop();
         cp.stop();
         ab.stop();
-    }
 
+        imu.kill();
+    }
+    //endregion
     private static void say(Object o) {
         opm.telemetry.addLine(""+o);
         opm.telemetry.update();
     }
-
+    //region Macro
     //Unfortunately, we don't inherit MacroSystem here, because these are static methods.  I'm not
     //sure how to get around this from an OOP perspective
     public static void recordMacroState() {
@@ -113,6 +134,7 @@ public final class Robot {
         pm.playMacroState(m);
         ab.playMacroState(m);
     }
+    //endregion
 
     //region Autonomous
     /*@SubSystem.Auto
@@ -148,7 +170,9 @@ public final class Robot {
             int diffTicks = end.subtract(current).fwdTicks();
 
             double turn = turnForStableAngle(targetHeading);
-            double fwd  = MoreMath.clip(((double) diffTicks / 250), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double fwd  = MoreMath.clip(((double) diffTicks / 400), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            if(fwd > 0 && fwd < Mecanum.AUTO_MIN_SPEED) fwd = Mecanum.AUTO_MIN_SPEED;
+            if(fwd < 0 && fwd < -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
 
             me.setPowers(fwd,0, turn);
 
@@ -170,7 +194,9 @@ public final class Robot {
             int diffTicks = end.subtract(current).strafeTicks();
 
             double turn   = turnForStableAngle(targetHeading);
-            double strafe = MoreMath.clip(( (double) diffTicks / 600), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double strafe = MoreMath.clip(( (double) diffTicks / 400), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            if(strafe > 0 && strafe < Mecanum.AUTO_MIN_SPEED) strafe = Mecanum.AUTO_MIN_SPEED;
+            if(strafe < 0 && strafe < -Mecanum.AUTO_MIN_SPEED) strafe = -Mecanum.AUTO_MIN_SPEED;
 
             me.setPowers(0, strafe, turn);
 
@@ -212,39 +238,36 @@ public final class Robot {
         }
     }
     @SubSystem.Auto
-    static void strafeUntilCloseToBlock(DistanceSensor dist, Side s) {
+    static void strafeUntilCloseToBlock() {
+        ab.halfLower(s);
         double pwr = 0.3;
         if(s == Side.BLUE) pwr = -pwr;
         me.setPowers(0, pwr, 0);
 
-        while(lop.opModeIsActive() && (dist.getDistance(CM) > 30 || Double.isNaN(dist.getDistance(CM)))) {
+        while( lop.opModeIsActive() && (distCol.getDistance(CM) > 40 || Double.isNaN(distCol.getDistance(CM))) ) {
             me.setPowers(0, pwr, turnForStableAngle(0));
             lop.idle();
         }
         me.setPowers(0,0,0);
 
     }
-    static void findBlock(ColorSensor c, DistanceSensor d, Side s) {
-        while(c.red() > 30 && lop.opModeIsActive()) {
-            me.setPowers(-0.3, strafeForStableDistance(d, 15), turnForStableAngle(0));
+    static void collectSkystone() {
+        while(color.red() > 45 && lop.opModeIsActive()) {
+            me.setPowers(-0.3, strafeForStableDistance(17), turnForStableAngle(0));
         }
         me.setPowers(0,0,0);
         fwdTicks(100, 0);
+        strafeTicks(-50, 0);
 
-        ab.halfLower(s);
-        strafeTicks(100,0);
         ab.lower(s);
         lop.sleep(500);
+        ab.close(s);
+        lop.sleep(200);
         ab.raise(s);
-
-        strafeTicks(-300, 0);
     }
-    static void releaseBlock(Side s) {
-        ab.release(s);
-    }
-    static void fwdUntilAtWall(DistanceSensor d) {
-        while(d.getDistance(CM) > 20 && lop.opModeIsActive()) {
-            double fwd = MoreMath.clip(d.getDistance(CM) / 200, 0.3, 1);
+    static void fwdUntilAtWall() {
+        while(dist.getDistance(CM) > 20 && lop.opModeIsActive()) {
+            double fwd = MoreMath.clip(dist.getDistance(CM) / 200, 0.3, 1);
             me.setPowers(fwd, 0, turnForStableAngle(0));
         }
     }
@@ -254,9 +277,9 @@ public final class Robot {
         final double P = 0.015;
         return MoreMath.clip( -diff * P, -.5, .5 );
     }
-    private static double strafeForStableDistance(DistanceSensor d, double targetDist) {
-        double diff = d.getDistance(CM) - targetDist;
-        final double P = 0.02;
+    private static double strafeForStableDistance(double targetDist) {
+        double diff = distCol.getDistance(CM) - targetDist;
+        final double P = 0.01;
         return P * diff;
     }
 

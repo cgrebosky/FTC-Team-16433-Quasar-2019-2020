@@ -112,6 +112,9 @@ public abstract class ThreadSubSystem extends Thread {
     public synchronized boolean isStopRequested() {
         return lop.isStopRequested();
     }
+    public synchronized void kill() {
+        state = PRGM_STATE.STOPPED;
+    }
     public synchronized PRGM_STATE getProgramState() {
         return state;
     }

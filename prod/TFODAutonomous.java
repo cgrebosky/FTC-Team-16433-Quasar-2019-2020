@@ -9,10 +9,11 @@ public class TFODAutonomous extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Robot.create(this);
         Robot.autoInit();
+        Robot.initTFOD();
 
         waitForStart();
 
-        Robot.leftToBlock();
+        //Robot.leftToBlock();
 
         while(opModeIsActive()) {
             Robot.sayTFPosition();

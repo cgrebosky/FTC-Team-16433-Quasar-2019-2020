@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import quasar.lib.AutoTransitioner;
 import quasar.lib.macro.PartialMacroPlayer;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
+
 
 @Autonomous(name = "3 Block Autonomous", group = "prod")
 public final class Autonomous3B extends LinearOpMode {
@@ -17,7 +19,6 @@ public final class Autonomous3B extends LinearOpMode {
     private ColorSensor color;
     private DistanceSensor distanceCol, distance;
 
-    private Side side = Side.RED;
     private long delayMS = 0;
 
     @Override
@@ -27,13 +28,25 @@ public final class Autonomous3B extends LinearOpMode {
         initMiscellaneous();
 
         telemetry.addLine("All Subsystems initialized successfully :D");
-        telemetry.addData("Side", side == Side.RED ? "RED" : "BLUE");
+        telemetry.addData("Side", Robot.s == Side.RED ? "RED" : "BLUE");
         telemetry.addData("Delay (ms)", delayMS);
         telemetry.update();
 
         waitForStart();
         say("Started");
 
+        Robot.strafeTicks(1250,0);
+        Robot.strafeUntilCloseToBlock();
+        Robot.collectSkystone();
+        Robot.strafeTicks(-300,0);
+        Robot.fwdTicks(-3000,0);
+
+        while(opModeIsActive()) {
+            telemetry.addData("RED", Robot.color.red());
+            telemetry.addData("DIS", Robot.distCol.getDistance(CM));
+            telemetry.update();
+        }
+        /*
         Robot.strafeTicks(1350, 0);
         Robot.findBlock(color, distanceCol, side);
         Robot.fwdTicks(-3400, 0);
@@ -50,17 +63,18 @@ public final class Autonomous3B extends LinearOpMode {
         Robot.releaseBlock(side);
         Robot.strafeTicks(-300, 0);
         pm.playMacro();
+         */
     }
 
     private void chooseOptions() {
 
         boolean prevX = true;
         while(!isStopRequested() && (!gamepad1.a || gamepad1.start)) {
-            if(gamepad1.x && !prevX) side = side.swap();
+            if(gamepad1.x && !prevX) Robot.s = Robot.s.swap();
             prevX = gamepad1.x;
 
             telemetry.addLine("Which side are you on?");
-            telemetry.addData("Current Side", side);
+            telemetry.addData("Current Side", Robot.s);
             telemetry.addLine("Press [X] to switch, [A] to select");
             telemetry.update();
         }
@@ -91,15 +105,7 @@ public final class Autonomous3B extends LinearOpMode {
         pm.init();
         say("Macro Ready");
 
-        distance = hardwareMap.get(DistanceSensor.class, "distance");
-        if(side == Side.RED) {
-            color = hardwareMap.colorSensor.get("colorRight");
-            distanceCol = hardwareMap.get(DistanceSensor.class, "colorRight");
-        }
-        else {
-            color = hardwareMap.colorSensor.get("colorLeft");
-            distanceCol = hardwareMap.get(DistanceSensor.class, "colorLeft");
-        }
+        Robot.initSensors();
         say("Sensors Ready");
 
         AutoTransitioner.transitionOnStop(this, "Quasar TeleOp");

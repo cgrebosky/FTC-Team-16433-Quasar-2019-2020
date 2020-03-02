@@ -10,8 +10,8 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
 
     public Servo leftArm, leftClaw, rightArm, rightClaw;
 
-    private double LEFT_UP  = 0.31, LEFT_HALF  = 0.77, LEFT_DOWN  = 0.93;
-    private double RIGHT_UP = 1.0, RIGHT_HALF = 0.58, RIGHT_DOWN = 0.41;
+    private double LEFT_UP  = 0.3, LEFT_HALF  = 0.6, LEFT_DOWN  = 0.75;
+    private double RIGHT_UP = 0.97, RIGHT_HALF = 0.66, RIGHT_DOWN = 0.51;
     private double LEFT_CLOSED  = 0.35, LEFT_OPEN  = 0.11;
     private double RIGHT_CLOSED = 0.05, RIGHT_OPEN = 0.3;
 
@@ -21,6 +21,11 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
         rightArm  = hmap.servo.get("BMRightArm");
         leftClaw  = hmap.servo.get("BMLeftClaw");
         rightClaw = hmap.servo.get("BMRightClaw");
+
+        leftArm.setPosition(LEFT_UP);
+        rightArm.setPosition(RIGHT_UP);
+        leftClaw.setPosition(LEFT_CLOSED);
+        rightClaw.setPosition(RIGHT_CLOSED);
     }
 
     @Override

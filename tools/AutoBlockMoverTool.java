@@ -1,14 +1,13 @@
 package quasar.tools;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import quasar.prod.Side;
 import quasar.subsystems.AutoBlockMover;
 import quasar.subsystems.Mecanum;
 
-@TeleOp(name = "AutoBlockMover Tool", group = "Tools")
+@Autonomous(name = "AutoBlockMover Tool", group = "Tools")
 public final class AutoBlockMoverTool extends LinearOpMode {
     AutoBlockMover ab = new AutoBlockMover();
     Mecanum me = new Mecanum();
@@ -23,10 +22,12 @@ public final class AutoBlockMoverTool extends LinearOpMode {
         waitForStart();
 
         ab.halfLower(Side.RED);
-        sleep(3000);
+        sleep(800);
         ab.close(Side.RED);
-        sleep(200);
+        sleep(300);
         ab.raise(Side.RED);
+        sleep(500);
+        ab.release(Side.RED);
 
     }
 }
