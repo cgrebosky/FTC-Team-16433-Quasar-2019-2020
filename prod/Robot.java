@@ -10,6 +10,7 @@ import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.IMUHandler;
+import quasar.subsystems.threaded.TFSkystoneDetector;
 import quasar.subsystems.threaded.VuforiaPositionDetector;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
@@ -23,7 +24,7 @@ public final class Robot {
     private static AutoBlockMover ab = new AutoBlockMover();
     
     private static IMUHandler imu = new IMUHandler();
-    private static VuforiaPositionDetector vpd = new VuforiaPositionDetector();
+    private static TFSkystoneDetector tfs = new TFSkystoneDetector();
 
     private static LinearOpMode lop = null;
     private static OpMode opm = null;
@@ -48,9 +49,9 @@ public final class Robot {
         imu.start();
         say("IMU initialized");
 
-        vpd.create(lop, false);
-        vpd.start();
-        say("Vuforia Positioner initialized");
+        tfs.create(lop, false);
+        tfs.start();
+        say("Tensorflow initialized");
 
         init();
     }
@@ -114,7 +115,7 @@ public final class Robot {
     }
 
     //region Autonomous
-    @SubSystem.Auto
+    /*@SubSystem.Auto
     void goToPositionVuforia(double endX, double endY) {
         double startAngle = imu.getAbsoluteHeading();
         while(lop.opModeIsActive() && vpd.imageIsVisible()) {
@@ -133,7 +134,7 @@ public final class Robot {
 
             me.setPowers(-xPow, yPow, turn);
         }
-    }
+    }*/
 
     @SubSystem.Auto
     static void fwdTicks(int ticks, double targetHeading) {
@@ -259,5 +260,14 @@ public final class Robot {
         return P * diff;
     }
 
+    public static void sayTFPosition() {
+        lop.telemetry.addData("X,Y", tfs.getX() + ", " + tfs.getY());
+    }
+    static void goToBlock() {
+        while(lop.opModeIsActive() && !tfs.isSkystoneIsVisible()) me.setPowers(0, -0.4, turnForStableAngle(0));
+
+
+        me.setPowers(0,0,0);
+    }
     //endregion
 }
