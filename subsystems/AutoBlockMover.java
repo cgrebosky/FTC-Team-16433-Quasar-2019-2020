@@ -11,7 +11,7 @@ public final class AutoBlockMover extends SubSystem implements MacroSystem {
     public Servo leftArm, leftClaw, rightArm, rightClaw;
 
     private double LEFT_UP  = 0.3, LEFT_HALF  = 0.6, LEFT_DOWN  = 0.75;
-    private double RIGHT_UP = 0.97, RIGHT_HALF = 0.66, RIGHT_DOWN = 0.51;
+    private double RIGHT_UP = 0.63, RIGHT_HALF = 0.3, RIGHT_DOWN = 0.1;
     private double LEFT_CLOSED  = 0.35, LEFT_OPEN  = 0.11;
     private double RIGHT_CLOSED = 0.05, RIGHT_OPEN = 0.3;
 

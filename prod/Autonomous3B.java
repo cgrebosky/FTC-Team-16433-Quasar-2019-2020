@@ -35,35 +35,32 @@ public final class Autonomous3B extends LinearOpMode {
         waitForStart();
         say("Started");
 
-        Robot.strafeTicks(1250,0);
+        Robot.strafeTicks(1200,0);
         Robot.strafeUntilCloseToBlock();
         Robot.collectSkystone();
         Robot.strafeTicks(-300,0);
-        Robot.fwdTicks(-3000,0);
+        Robot.fwdTicks(-3300,0);
+        Robot.strafeTicks(300,0);
+        Robot.release();
+        Robot.strafeTicks(-100,0);
+        Robot.fwdTicks(4000, 0);
+        Robot.fwdUntilAtWall();
+        Robot.strafeUntilCloseToBlock();
+        Robot.collectSkystone();
+        Robot.strafeTicks(-300,0);
+        Robot.fwdTicks(-5000,0);
+        Robot.strafeTicks(250,0);
+        Robot.release();
+        Robot.strafeTicks(-250 ,0);
+
+        pm.playMacro();
 
         while(opModeIsActive()) {
             telemetry.addData("RED", Robot.color.red());
             telemetry.addData("DIS", Robot.distCol.getDistance(CM));
+            telemetry.addData("IMU", Robot.imu.getAbsoluteHeading());
             telemetry.update();
         }
-        /*
-        Robot.strafeTicks(1350, 0);
-        Robot.findBlock(color, distanceCol, side);
-        Robot.fwdTicks(-3400, 0);
-        Robot.strafeTicks(300,0);
-        Robot.releaseBlock(side);
-        Robot.strafeTicks(-400,0);
-        Robot.fwdUntilAtWall(distance);
-        Robot.fwdTicks(100, 0);
-        Robot.strafeUntilCloseToBlock(distanceCol, side);
-        Robot.findBlock(color, distanceCol, side);
-        Robot.strafeTicks(-100, 0);
-        Robot.fwdTicks(-5000, 0);
-        Robot.strafeTicks(300,0);
-        Robot.releaseBlock(side);
-        Robot.strafeTicks(-300, 0);
-        pm.playMacro();
-         */
     }
 
     private void chooseOptions() {

@@ -29,7 +29,7 @@ public final class Robot {
     private static CapstoneDepositor cp = new CapstoneDepositor();
     private static AutoBlockMover ab = new AutoBlockMover();
     
-    private static IMUHandler imu = new IMUHandler();
+    public static IMUHandler imu = new IMUHandler();
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
 
     //region Internal Stuff
@@ -111,6 +111,7 @@ public final class Robot {
         ab.stop();
 
         imu.kill();
+        imu.interrupt();
     }
     //endregion
     private static void say(Object o) {
@@ -170,9 +171,9 @@ public final class Robot {
             int diffTicks = end.subtract(current).fwdTicks();
 
             double turn = turnForStableAngle(targetHeading);
-            double fwd  = MoreMath.clip(((double) diffTicks / 400), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double fwd  = MoreMath.clip(((double) diffTicks / 600), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
             if(fwd > 0 && fwd < Mecanum.AUTO_MIN_SPEED) fwd = Mecanum.AUTO_MIN_SPEED;
-            if(fwd < 0 && fwd < -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
+            if(fwd < 0 && fwd > -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
 
             me.setPowers(fwd,0, turn);
 
@@ -194,9 +195,9 @@ public final class Robot {
             int diffTicks = end.subtract(current).strafeTicks();
 
             double turn   = turnForStableAngle(targetHeading);
-            double strafe = MoreMath.clip(( (double) diffTicks / 400), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double strafe = MoreMath.clip(( (double) diffTicks / 600), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
             if(strafe > 0 && strafe < Mecanum.AUTO_MIN_SPEED) strafe = Mecanum.AUTO_MIN_SPEED;
-            if(strafe < 0 && strafe < -Mecanum.AUTO_MIN_SPEED) strafe = -Mecanum.AUTO_MIN_SPEED;
+            if(strafe < 0 && strafe > -Mecanum.AUTO_MIN_SPEED) strafe = -Mecanum.AUTO_MIN_SPEED;
 
             me.setPowers(0, strafe, turn);
 
@@ -204,6 +205,35 @@ public final class Robot {
             lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
             lop.telemetry.addData("Target Heading", targetHeading);
             lop.telemetry.update();
+        }
+    }
+    //Y represents fwd, X represents strafing
+    static void goToXY(int x, int y, double targetHeading) {
+        Mecanum.EncoderPosition current = me.new EncoderPosition();
+        Mecanum.EncoderPosition endFwd  = current.fwd(y);
+        Mecanum.EncoderPosition endStr  = current.strafe(x);
+
+        while(
+                lop.opModeIsActive() &&
+                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), Mecanum.AUTO_ERR ) &&
+                !MoreMath.isClose( current.fwdTicks(), endStr.strafeTicks(), Mecanum.AUTO_ERR )
+        ) {
+            current = me.new EncoderPosition();
+            int diffFwd = endFwd.subtract(current).fwdTicks();
+            int diffStrafe = endStr.subtract(current).strafeTicks();
+
+            double turn      = turnForStableAngle(targetHeading);
+            double fwdPwr    = limitMecanumPwr((float) diffFwd / 100);
+            double strafePwr = limitMecanumPwr((float) diffStrafe / 100);
+
+            me.setPowers(fwdPwr, strafePwr, turn);
+
+            lop.telemetry.addData("Diff FWD", diffFwd);
+            lop.telemetry.addData("Diff STRAFE", diffStrafe);
+            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
+            lop.telemetry.addData("Target Heading", targetHeading);
+            lop.telemetry.update();
+            lop.idle();
         }
     }
     @SubSystem.Auto
@@ -237,7 +267,6 @@ public final class Robot {
             lop.idle();
         }
     }
-    @SubSystem.Auto
     static void strafeUntilCloseToBlock() {
         ab.halfLower(s);
         double pwr = 0.3;
@@ -253,11 +282,11 @@ public final class Robot {
     }
     static void collectSkystone() {
         while(color.red() > 45 && lop.opModeIsActive()) {
-            me.setPowers(-0.3, strafeForStableDistance(17), turnForStableAngle(0));
+            me.setPowers(-0.3, strafeForStableDistance(20), turnForStableAngle(0));
         }
         me.setPowers(0,0,0);
-        fwdTicks(100, 0);
-        strafeTicks(-50, 0);
+        fwdTicks(25, 0);
+        strafeTicks(35, 0);
 
         ab.lower(s);
         lop.sleep(500);
@@ -266,21 +295,34 @@ public final class Robot {
         ab.raise(s);
     }
     static void fwdUntilAtWall() {
-        while(dist.getDistance(CM) > 20 && lop.opModeIsActive()) {
-            double fwd = MoreMath.clip(dist.getDistance(CM) / 200, 0.3, 1);
+        while((dist.getDistance(CM) > 15 || Double.isNaN(dist.getDistance(CM))) && lop.opModeIsActive()) {
+            double fwd = MoreMath.clip(dist.getDistance(CM) / 200, 0.3, 0.4);
             me.setPowers(fwd, 0, turnForStableAngle(0));
+            opm.telemetry.addData("Dist", dist.getDistance(CM));
+            opm.telemetry.update();
         }
+    }
+    static void release() {
+        ab.release(s);
     }
 
     private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
-        final double P = 0.015;
+        final double P = 0.018;
         return MoreMath.clip( -diff * P, -.5, .5 );
     }
     private static double strafeForStableDistance(double targetDist) {
         double diff = distCol.getDistance(CM) - targetDist;
         final double P = 0.01;
         return P * diff;
+    }
+    private static double limitMecanumPwr(double pwr) {
+        double p = MoreMath.clip(pwr, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+
+        if(p > 0 && p < Mecanum.AUTO_MIN_SPEED) p = Mecanum.AUTO_MIN_SPEED;
+        if(p < 0 && p > -Mecanum.AUTO_MIN_SPEED) p = -Mecanum.AUTO_MIN_SPEED;
+
+        return p;
     }
 
     public static void sayTFPosition() {
