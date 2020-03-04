@@ -9,9 +9,10 @@ import quasar.lib.macro.MacroSystem;
 
 public final class Collector extends SubSystem implements MacroSystem {
     private DcMotor collectorLeft, collectorRight;
-    private Servo limiter;
+    private Servo limiterLeft, limiterRight;
 
-    private final double IN = 0, HALF = 0, OPEN = 0;
+    private final double L_IN = 0.99, L_HALF = 0.48, L_OPEN = 0.29;
+    private final double R_IN = 0, R_HALF = 0, R_OPEN = 0;
 
     //region SubSystem
     @Override
@@ -26,9 +27,11 @@ public final class Collector extends SubSystem implements MacroSystem {
         collectorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         collectorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        limiter = hmap.servo.get("limiter");
+        limiterLeft = hmap.servo.get("limiterLeft");
+        limiterRight = hmap.servo.get("limiterRight");
 
-        limiter.setPosition(IN);
+        limiterLeft.setPosition(L_IN);
+        limiterRight.setPosition(R_IN);
     }
 
     @Override
@@ -37,8 +40,8 @@ public final class Collector extends SubSystem implements MacroSystem {
         collectorLeft.setPower(pwr);
         collectorRight.setPower(pwr);
 
-        if(gamepad1.left_bumper) limiter.setPosition(OPEN);
-        else limiter.setPosition(HALF);
+        if(gamepad1.left_bumper) open();
+        else half();
 
         postLoop();
     }
@@ -54,14 +57,27 @@ public final class Collector extends SubSystem implements MacroSystem {
         telemetry.addLine("COLLECTOR");
 
         String pos = "?";
-        if(limiter.getPosition() == IN) pos = "IN";
-        if(limiter.getPosition() == HALF) pos = "HALF";
-        if(limiter.getPosition() == OPEN) pos = "OPEN";
+        if(limiterLeft.getPosition() == L_IN) pos = "IN";
+        if(limiterLeft.getPosition() == L_HALF) pos = "HALF";
+        if(limiterLeft.getPosition() == L_OPEN) pos = "OPEN";
         telemetry.addData("    Current Position", pos);
         telemetry.addData("    Power", gamepad1.left_trigger - gamepad1.right_trigger);
         telemetry.addLine();
     }
     //endregion
+
+    public void open() {
+        limiterLeft.setPosition(L_OPEN);
+        limiterRight.setPosition(R_OPEN);
+    }
+    public void half() {
+        limiterLeft.setPosition(L_HALF);
+        limiterRight.setPosition(R_HALF);
+    }
+    public void close() {
+        limiterLeft.setPosition(L_IN);
+        limiterRight.setPosition(R_IN);
+    }
 
     //region Macro
     @Override
@@ -69,14 +85,16 @@ public final class Collector extends SubSystem implements MacroSystem {
         MacroState.Companion.getCurrentMacroState().setColLeftPow(collectorLeft.getPower());
         MacroState.Companion.getCurrentMacroState().setColRightPow(collectorRight.getPower());
 
-        MacroState.Companion.getCurrentMacroState().setColLimiter(limiter.getPosition());
+        MacroState.Companion.getCurrentMacroState().setColLimiterL(limiterLeft.getPosition());
+        MacroState.Companion.getCurrentMacroState().setColLimiterR(limiterRight.getPosition());
     }
     @Override
     public void playMacroState(MacroState m) {
         collectorLeft.setPower(m.getColLeftPow());
         collectorRight.setPower(m.getColRightPow());
 
-        limiter.setPosition(m.getColLimiter());
+        limiterLeft.setPosition(m.getColLimiterL());
+        limiterRight.setPosition(m.getColLimiterR());
     }
     //endregion
 

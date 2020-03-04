@@ -40,6 +40,12 @@ public abstract class ThreadSubSystem extends Thread {
         gamepad1  = lop.gamepad1;
         gamepad2  = lop.gamepad2;
     }
+
+    @Override
+    public synchronized void start() {
+        if(this.getState() == Thread.State.NEW) super.start();
+    }
+
     //endregion
 
     //region SubSystem
