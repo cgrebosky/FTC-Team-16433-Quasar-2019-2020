@@ -12,10 +12,23 @@ public final class AutonomousCollector extends LinearOpMode {
 
         waitForStart();
 
-        Robot.fwdTicks(1000,0);
-        Robot.fwdToBlocks() {
+        Robot.getPosition();
+        Robot.moveCapstoneOutOfWay();
+        Robot.collect();
+        Robot.fwdToBlock();
+        Robot.fwdTicksSlow(500,0);
+        Robot.fwdTicks(-750,0);
 
+        while(opModeIsActive()) {
+            telemetry.addData("Pos", Robot.pb);
+            telemetry.update();
         }
+
+        //L>350 = C
+        //L in 350-150 = L
+
+        //FWD 1500
+        //L = -280, C = 200, R = 650
     }
 
     private void say(Object o) {

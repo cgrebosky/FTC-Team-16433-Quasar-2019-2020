@@ -1,5 +1,7 @@
 package quasar.prod;
 
+import android.drm.DrmStore;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -17,20 +19,24 @@ import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.C
 
 public final class Robot {
     static Side s = Side.RED;
-    private static BlockPosition pb = BlockPosition.CENTER;
+    static BlockPosition pb = BlockPosition.CENTER;
 
     public static ColorSensor color;
+    public static ColorSensor colL, colR;
     public static DistanceSensor dist, distCol;
+    public static DistanceSensor distL, distR;
 
     private static Collector co = new Collector();
     private static Lift li = new Lift();
     private static Mecanum me = new Mecanum();
     private static PlatformMover pm = new PlatformMover();
     private static CapstoneDepositor cp = new CapstoneDepositor();
-    private static AutoBlockMover ab = new AutoBlockMover();
+    //private static AutoBlockMover ab = new AutoBlockMover();
     
     public static IMUHandler imu = new IMUHandler();
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
+
+    private static int dCenter = 50, dLeft = -70, dRight = 600, dThis = dCenter;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -48,7 +54,7 @@ public final class Robot {
         me.create(opm);
         pm.create(opm);
         cp.create(opm);
-        ab.create(opm);
+        //ab.create(opm);
     }
 
     public static void autoInit() {
@@ -56,7 +62,15 @@ public final class Robot {
         imu.start();
         say("IMU initialized");
 
+        initTFOD();
+        say("Tensorflow initialized");
+
         init();
+
+        colL = lop.hardwareMap.colorSensor.get("colorLeft");
+        colR = lop.hardwareMap.colorSensor.get("colorRight");
+        distL = lop.hardwareMap.get(DistanceSensor.class, "colorLeft");
+        distR = lop.hardwareMap.get(DistanceSensor.class, "colorRight");
     }
     public static void initTFOD() {
         tfs.create(lop, false);
@@ -78,8 +92,8 @@ public final class Robot {
         cp.init();
         say("Capstone Depositor initialized");
 
-        ab.init();
-        say("Autonomous Block Mover initialized");
+        //ab.init();
+        //say("Autonomous Block Mover initialized");
     }
     //You MUST set the side before calling this
     public static void initSensors() {
@@ -99,7 +113,7 @@ public final class Robot {
         me.loop();
         pm.loop();
         cp.loop();
-        ab.loop();
+        //ab.loop();
         opm.telemetry.update();
     }
     public static void stop() {
@@ -108,10 +122,13 @@ public final class Robot {
         me.stop();
         pm.stop();
         cp.stop();
-        ab.stop();
+        //ab.stop();
 
         imu.kill();
         imu.interrupt();
+
+        tfs.kill();
+        tfs.interrupt();
     }
     //endregion
     private static void say(Object o) {
@@ -126,14 +143,14 @@ public final class Robot {
         li.recordMacroState();
         me.recordMacroState();
         pm.recordMacroState();
-        ab.recordMacroState();
+        //ab.recordMacroState();
     }
     public static void playMacroState(MacroState m) {
         co.playMacroState(m);
         li.playMacroState(m);
         me.playMacroState(m);
         pm.playMacroState(m);
-        ab.playMacroState(m);
+        //ab.playMacroState(m);
     }
     //endregion
 
@@ -182,6 +199,30 @@ public final class Robot {
             lop.telemetry.addData("Target Heading", targetHeading);
             lop.telemetry.update();
         }
+        me.setPowers(0,0,0);
+    }
+    static void fwdTicksSlow(int ticks, double targetHeading) {
+        Mecanum.EncoderPosition startPos = me.new EncoderPosition();
+        Mecanum.EncoderPosition current  = me.new EncoderPosition();
+        Mecanum.EncoderPosition end      = startPos.fwd(ticks);
+
+        while(lop.opModeIsActive() && !MoreMath.isClose( current.fwdTicks(), end.fwdTicks(), Mecanum.AUTO_ERR )) {
+            current = me.new EncoderPosition();
+            int diffTicks = end.subtract(current).fwdTicks();
+
+            double turn = turnForStableAngle(targetHeading);
+            double fwd  = MoreMath.clip(((double) diffTicks / 600), -0.35, 0.35);
+            if(fwd > 0 && fwd < Mecanum.AUTO_MIN_SPEED) fwd = Mecanum.AUTO_MIN_SPEED;
+            if(fwd < 0 && fwd > -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
+
+            me.setPowers(fwd,0, turn);
+
+            lop.telemetry.addData("DiffTicks", diffTicks);
+            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
+            lop.telemetry.addData("Target Heading", targetHeading);
+            lop.telemetry.update();
+        }
+        me.setPowers(0,0,0);
     }
     //Positive ticks means going to the RIGHT, if we have collectors at front
     @SubSystem.Auto
@@ -206,6 +247,7 @@ public final class Robot {
             lop.telemetry.addData("Target Heading", targetHeading);
             lop.telemetry.update();
         }
+        me.setPowers(0,0,0);
     }
     //Y represents fwd, X represents strafing
     static void goToXY(int x, int y, double targetHeading) {
@@ -268,7 +310,7 @@ public final class Robot {
         }
     }
     static void strafeUntilCloseToBlock() {
-        ab.halfLower(s);
+        //ab.halfLower(s);
         double pwr = 0.3;
         if(s == Side.BLUE) pwr = -pwr;
         me.setPowers(0, pwr, 0);
@@ -288,11 +330,11 @@ public final class Robot {
         fwdTicks(25, 0);
         strafeTicks(35, 0);
 
-        ab.lower(s);
-        lop.sleep(500);
-        ab.close(s);
-        lop.sleep(200);
-        ab.raise(s);
+//        ab.lower(s);
+//        lop.sleep(500);
+//        ab.close(s);
+//        lop.sleep(200);
+//        ab.raise(s);
     }
     static void fwdUntilAtWall() {
         while((dist.getDistance(CM) > 15 || Double.isNaN(dist.getDistance(CM))) && lop.opModeIsActive()) {
@@ -302,9 +344,51 @@ public final class Robot {
             opm.telemetry.update();
         }
     }
-    static void release() {
-        ab.release(s);
+
+    static void moveCapstoneOutOfWay() {
+        cp.deactivate();
     }
+    static void fwdToBlock() {
+        if(pb == BlockPosition.LEFT) {
+            strafeTicks(dLeft,0);
+            fwdTicks(600, 0);
+        } else if(pb == BlockPosition.RIGHT) {
+            strafeTicks(dRight,0);
+            fwdTicks(600, 0);
+        } else if(pb == BlockPosition.CENTER) {
+            strafeTicks(dCenter,0);
+            fwdTicks(600, 0);
+        }
+    }
+    static void getPosition() {
+        fwdTicks(600,0);
+        long et = System.currentTimeMillis() + 3000;
+        int l = 0, c = 0, r = 0;
+        while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
+            double pos = tfs.getX();
+            if (pos > 100) l ++;
+            else if (pos <= 100) r ++;
+            else c ++;
+
+            lop.telemetry.addData("pos", pos);
+            lop.telemetry.update();
+        }
+        if(l > c && l > r) pb = BlockPosition.LEFT;
+        else if(c > l && c > r) pb = BlockPosition.CENTER;
+        else pb = BlockPosition.RIGHT;
+
+
+    }
+    static void collect() {
+        co.collect();
+        co.open();
+    }
+    static void deliver1stBlock() {
+        if(pb == BlockPosition.CENTER) dThis = dCenter;
+        if(pb == BlockPosition.LEFT) dThis = dLeft;
+        if(pb == BlockPosition.RIGHT) dThis = dRight;
+    }
+
 
     private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
@@ -323,6 +407,10 @@ public final class Robot {
         if(p < 0 && p > -Mecanum.AUTO_MIN_SPEED) p = -Mecanum.AUTO_MIN_SPEED;
 
         return p;
+    }
+    private static boolean distanceIsTooFar(double d, double target) {
+        if(Double.isNaN(d)) return true;
+        return d > target;
     }
 
     public static void sayTFPosition() {

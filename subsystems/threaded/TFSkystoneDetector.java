@@ -75,7 +75,7 @@ public class TFSkystoneDetector extends ThreadSubSystem {
         int tfodMonitorViewId = hmap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hmap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minimumConfidence = 0.5;
+        tfodParameters.minimumConfidence = 0.3;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }

@@ -11,8 +11,8 @@ public final class Collector extends SubSystem implements MacroSystem {
     private DcMotor collectorLeft, collectorRight;
     private Servo limiterLeft, limiterRight;
 
-    private final double L_IN = 0.99, L_HALF = 0.48, L_OPEN = 0.29;
-    private final double R_IN = 0, R_HALF = 0, R_OPEN = 0;
+    private final double L_IN = 0.3, L_HALF = 0.63, L_OPEN = 0.98;
+    private final double R_IN = 0.8, R_HALF = 0.5, R_OPEN = 0.1;
 
     //region SubSystem
     @Override
@@ -77,6 +77,18 @@ public final class Collector extends SubSystem implements MacroSystem {
     public void close() {
         limiterLeft.setPosition(L_IN);
         limiterRight.setPosition(R_IN);
+    }
+    public void collect() {
+        collectorLeft.setPower(-0.8);
+        collectorRight.setPower(-0.8);
+    }
+    public void push() {
+        collectorLeft.setPower(0.8);
+        collectorRight.setPower(0.8);
+    }
+    public void zero() {
+        collectorLeft.setPower(0);
+        collectorRight.setPower(0);
     }
 
     //region Macro

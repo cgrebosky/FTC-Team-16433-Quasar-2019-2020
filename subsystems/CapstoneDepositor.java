@@ -11,6 +11,7 @@ public final class CapstoneDepositor extends SubSystem {
     @Override
     public void init() {
         capstoneServo = hmap.servo.get("capstone");
+        activate();
     }
 
     private boolean prevA = true;
@@ -35,5 +36,14 @@ public final class CapstoneDepositor extends SubSystem {
     @Override
     public void stop() {
 
+    }
+
+    @Auto public void activate() {
+        isActive = true;
+        capstoneServo.setPosition(ON_TOP);
+    }
+    @Auto public void deactivate() {
+        isActive = false;
+        capstoneServo.setPosition(OUT_OF_WAY);
     }
 }

@@ -84,7 +84,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     public static final double CTRL_THRESHOLD = 0.1;
     public static final double AUTO_MAX_SPEED = 0.8;
-    public static final double AUTO_MIN_SPEED = 0.25;
+    public static final double AUTO_MIN_SPEED = 0.2;
     public static final double AUTO_ERR = 30;
 
     //region SubSystem

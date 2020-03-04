@@ -41,7 +41,7 @@ public final class Autonomous3B extends LinearOpMode {
         Robot.strafeTicks(-300,0);
         Robot.fwdTicks(-3300,0);
         Robot.strafeTicks(300,0);
-        Robot.release();
+        //Robot.release();
         Robot.strafeTicks(-100,0);
         Robot.fwdTicks(4000, 0);
         Robot.fwdUntilAtWall();
@@ -50,7 +50,7 @@ public final class Autonomous3B extends LinearOpMode {
         Robot.strafeTicks(-300,0);
         Robot.fwdTicks(-5000,0);
         Robot.strafeTicks(250,0);
-        Robot.release();
+        //Robot.release();
         Robot.strafeTicks(-250 ,0);
 
         pm.playMacro();
