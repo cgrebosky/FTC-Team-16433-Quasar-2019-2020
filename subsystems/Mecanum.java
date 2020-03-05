@@ -83,8 +83,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     private boolean slowMode = false;
 
     public static final double CTRL_THRESHOLD = 0.1;
-    public static final double AUTO_MAX_SPEED = 0.8;
-    public static final double AUTO_MIN_SPEED = 0.2;
+    public static final double AUTO_MAX_SPEED = 1.0;
+    public static final double AUTO_MIN_SPEED = 0.4;
     public static final double AUTO_ERR = 30;
 
     //region SubSystem
@@ -100,10 +100,10 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -194,6 +194,26 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
         setNumericalPowers();
         setMotorPowers();
+    }
+
+    private void turnTicks(int t) {
+        int endTicks = bl.getCurrentPosition() + t;
+        while(!MoreMath.isClose(bl.getCurrentPosition(), endTicks, 40) && lop.opModeIsActive()) {
+            double pwr = (endTicks - bl.getCurrentPosition()) * 0.005;
+            if(pwr > 0) pwr = MoreMath.clip(pwr, Mecanum.AUTO_MIN_SPEED, Mecanum.AUTO_MAX_SPEED);
+            if(pwr < 0) pwr = MoreMath.clip(pwr, -Mecanum.AUTO_MIN_SPEED, -Mecanum.AUTO_MAX_SPEED);
+
+            bl.setPower(pwr);
+            fl.setPower(pwr);
+            fr.setPower(-pwr);
+            br.setPower(-pwr);
+        }
+        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        setPowers(0,0,0);
+    }
+    public void turnDegrees(double deg) {
+        turnTicks((int) (deg * 9.8));
     }
 
     //region Macro

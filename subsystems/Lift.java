@@ -114,6 +114,14 @@ public final class Lift extends SubSystem implements MacroSystem {
         liftRight.setPower(rightPwr);
     }
 
+    public void openClaw() {
+        clawIsOpen = true;
+        claw.setPosition(CLAW_OPEN);
+    }
+    public void closeClaw() {
+        clawIsOpen = false;
+        claw.setPosition(CLAW_CLOSED);
+    }
     //region Macro
     @Override
     public void recordMacroState() {

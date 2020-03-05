@@ -34,9 +34,9 @@ public final class Robot {
     //private static AutoBlockMover ab = new AutoBlockMover();
     
     public static IMUHandler imu = new IMUHandler();
-    private static TFSkystoneDetector tfs = new TFSkystoneDetector();
+    public static TFSkystoneDetector tfs = new TFSkystoneDetector();
 
-    private static int dCenter = 50, dLeft = -70, dRight = 600, dThis = dCenter;
+    private static int angleL = -10, angleC = 10, angleR = 25, angle = angleC;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -44,7 +44,12 @@ public final class Robot {
 
     public static void create(LinearOpMode lop) {
         Robot.lop = lop;
-        create((OpMode) lop);
+        Robot.opm = lop;
+        co.create(lop);
+        li.create(lop);
+        me.create(lop);
+        pm.create(lop);
+        cp.create(lop);
     }
     public static void create(OpMode opm) {
         Robot.opm = opm;
@@ -65,12 +70,23 @@ public final class Robot {
         initTFOD();
         say("Tensorflow initialized");
 
-        init();
+        co.autoInit();
+        say("Collector initialized");
 
-        colL = lop.hardwareMap.colorSensor.get("colorLeft");
-        colR = lop.hardwareMap.colorSensor.get("colorRight");
-        distL = lop.hardwareMap.get(DistanceSensor.class, "colorLeft");
-        distR = lop.hardwareMap.get(DistanceSensor.class, "colorRight");
+        li.autoInit();
+        say("Lift initialized");
+
+        me.autoInit();
+        say("Mecanum initialized");
+
+        pm.autoInit();
+        say("Platform Mover initialized");
+
+        cp.autoInit();
+        say("Capstone Depositor initialized");
+
+        initSensors();
+
     }
     public static void initTFOD() {
         tfs.create(lop, false);
@@ -98,14 +114,11 @@ public final class Robot {
     //You MUST set the side before calling this
     public static void initSensors() {
         dist = lop.hardwareMap.get(DistanceSensor.class, "distance");
-        if(Robot.s == Side.RED) {
-            color = lop.hardwareMap.colorSensor.get("colorRight");
-            distCol = lop.hardwareMap.get(DistanceSensor.class, "colorRight");
-        }
-        else {
-            color = lop.hardwareMap.colorSensor.get("colorLeft");
-            distCol = lop.hardwareMap.get(DistanceSensor.class, "colorLeft");
-        }
+
+        colL = lop.hardwareMap.colorSensor.get("colorLeft");
+        colR = lop.hardwareMap.colorSensor.get("colorRight");
+        distL = lop.hardwareMap.get(DistanceSensor.class, "colorLeft");
+        distR = lop.hardwareMap.get(DistanceSensor.class, "colorRight");
     }
     public static void loop() {
         co.loop();
@@ -176,7 +189,6 @@ public final class Robot {
         }
     }*/
 
-    @SubSystem.Auto
     static void fwdTicks(int ticks, double targetHeading) {
 
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
@@ -188,7 +200,7 @@ public final class Robot {
             int diffTicks = end.subtract(current).fwdTicks();
 
             double turn = turnForStableAngle(targetHeading);
-            double fwd  = MoreMath.clip(((double) diffTicks / 600), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+            double fwd  = MoreMath.clip(((double) diffTicks / 1000), -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
             if(fwd > 0 && fwd < Mecanum.AUTO_MIN_SPEED) fwd = Mecanum.AUTO_MIN_SPEED;
             if(fwd < 0 && fwd > -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
 
@@ -201,7 +213,7 @@ public final class Robot {
         }
         me.setPowers(0,0,0);
     }
-    static void fwdTicksSlow(int ticks, double targetHeading) {
+    static void fwdTicks(int ticks, double targetHeading, double pwr) {
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
         Mecanum.EncoderPosition end      = startPos.fwd(ticks);
@@ -211,7 +223,7 @@ public final class Robot {
             int diffTicks = end.subtract(current).fwdTicks();
 
             double turn = turnForStableAngle(targetHeading);
-            double fwd  = MoreMath.clip(((double) diffTicks / 600), -0.35, 0.35);
+            double fwd  = MoreMath.clip(((double) diffTicks / 600), -pwr, pwr);
             if(fwd > 0 && fwd < Mecanum.AUTO_MIN_SPEED) fwd = Mecanum.AUTO_MIN_SPEED;
             if(fwd < 0 && fwd > -Mecanum.AUTO_MIN_SPEED) fwd = -Mecanum.AUTO_MIN_SPEED;
 
@@ -224,8 +236,6 @@ public final class Robot {
         }
         me.setPowers(0,0,0);
     }
-    //Positive ticks means going to the RIGHT, if we have collectors at front
-    @SubSystem.Auto
     static void strafeTicks(int ticks, double targetHeading) {
         Mecanum.EncoderPosition startPos = me.new EncoderPosition();
         Mecanum.EncoderPosition current  = me.new EncoderPosition();
@@ -249,66 +259,31 @@ public final class Robot {
         }
         me.setPowers(0,0,0);
     }
-    //Y represents fwd, X represents strafing
-    static void goToXY(int x, int y, double targetHeading) {
-        Mecanum.EncoderPosition current = me.new EncoderPosition();
-        Mecanum.EncoderPosition endFwd  = current.fwd(y);
-        Mecanum.EncoderPosition endStr  = current.strafe(x);
+    static void turnDeg(double deg) {
+                me.setPowers(0,0,-Math.signum(deg) * 0.5 / 3);
 
-        while(
-                lop.opModeIsActive() &&
-                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), Mecanum.AUTO_ERR ) &&
-                !MoreMath.isClose( current.fwdTicks(), endStr.strafeTicks(), Mecanum.AUTO_ERR )
-        ) {
-            current = me.new EncoderPosition();
-            int diffFwd = endFwd.subtract(current).fwdTicks();
-            int diffStrafe = endStr.subtract(current).strafeTicks();
+                double start = imu.getAbsoluteHeading();
+                double end = deg + start;
+                double curr = start;
+                double diff = end - curr;
+                while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
+                    curr = imu.getAbsoluteHeading();
+                    diff = end - curr;
 
-            double turn      = turnForStableAngle(targetHeading);
-            double fwdPwr    = limitMecanumPwr((float) diffFwd / 100);
-            double strafePwr = limitMecanumPwr((float) diffStrafe / 100);
+                    if(Math.abs(diff) > 30) me.setPowers(0,0,-Math.signum(deg) * 0.7);
+                    else if(Math.abs(diff) > 15) me.setPowers(0,0,-Math.signum(deg) * 0.2);
+                    else if(Math.abs(diff) > 5) me.setPowers(0,0,-Math.signum(deg) * 0.3 * 0.25);
 
-            me.setPowers(fwdPwr, strafePwr, turn);
-
-            lop.telemetry.addData("Diff FWD", diffFwd);
-            lop.telemetry.addData("Diff STRAFE", diffStrafe);
-            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
-            lop.telemetry.addData("Target Heading", targetHeading);
-            lop.telemetry.update();
-            lop.idle();
-        }
+                    opm.telemetry.addData("start", start);
+                    opm.telemetry.addData("end", end);
+                    opm.telemetry.addData("curr", curr);
+                    opm.telemetry.addData("diff", diff);
+                    opm.telemetry.update();
+                }
+                me.setPowers(0,0,0);
     }
-    @SubSystem.Auto
-    public static void moveXYTicks(int strafe, int fwd, double targetHeading) {
-        Mecanum.EncoderPosition startPos = me.new EncoderPosition();
-        Mecanum.EncoderPosition current  = me.new EncoderPosition();
-        Mecanum.EncoderPosition endFwd   = startPos.fwd(fwd);
-        Mecanum.EncoderPosition endStrafe= startPos.strafe(strafe);
 
-        long t = System.currentTimeMillis() + 5000;
-        while(System.currentTimeMillis() < t &&
-                lop.opModeIsActive() &&
-                !MoreMath.isClose( current.fwdTicks(), endFwd.fwdTicks(), Mecanum.AUTO_ERR ) &&
-                !MoreMath.isClose( current.fwdTicks(), endStrafe.strafeTicks(), Mecanum.AUTO_ERR ))
-        {
-            current = me.new EncoderPosition();
-            int diffFwd = endFwd.subtract(current).fwdTicks();
-            int diffStrafe = endStrafe.subtract(current).strafeTicks();
 
-            double turn      = turnForStableAngle(targetHeading);
-            double fwdPwr    = MoreMath.clip(diffFwd / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
-            double strafePwr = MoreMath.clip(diffStrafe / 50, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
-
-            me.setPowers(fwdPwr, strafePwr, turn);
-
-            lop.telemetry.addData("Diff FWD", diffFwd);
-            lop.telemetry.addData("Diff STRAFE", diffStrafe);
-            lop.telemetry.addData("Heading", imu.getAbsoluteHeading());
-            lop.telemetry.addData("Target Heading", targetHeading);
-            lop.telemetry.update();
-            lop.idle();
-        }
-    }
     static void strafeUntilCloseToBlock() {
         //ab.halfLower(s);
         double pwr = 0.3;
@@ -338,31 +313,22 @@ public final class Robot {
     }
     static void fwdUntilAtWall() {
         while((dist.getDistance(CM) > 15 || Double.isNaN(dist.getDistance(CM))) && lop.opModeIsActive()) {
-            double fwd = MoreMath.clip(dist.getDistance(CM) / 200, 0.3, 0.4);
+            double fwd = MoreMath.clip(dist.getDistance(CM) / 200, Mecanum.AUTO_MIN_SPEED, Mecanum.AUTO_MAX_SPEED);
             me.setPowers(fwd, 0, turnForStableAngle(0));
             opm.telemetry.addData("Dist", dist.getDistance(CM));
             opm.telemetry.update();
         }
     }
 
-    static void moveCapstoneOutOfWay() {
+    static void miscLateInit() {
+        co.open();
+        co.collect();
         cp.deactivate();
-    }
-    static void fwdToBlock() {
-        if(pb == BlockPosition.LEFT) {
-            strafeTicks(dLeft,0);
-            fwdTicks(600, 0);
-        } else if(pb == BlockPosition.RIGHT) {
-            strafeTicks(dRight,0);
-            fwdTicks(600, 0);
-        } else if(pb == BlockPosition.CENTER) {
-            strafeTicks(dCenter,0);
-            fwdTicks(600, 0);
-        }
+        li.openClaw();
     }
     static void getPosition() {
-        fwdTicks(600,0);
-        long et = System.currentTimeMillis() + 3000;
+        fwdTicks(550,0);
+        long et = System.currentTimeMillis() + 2000;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             double pos = tfs.getX();
@@ -379,16 +345,51 @@ public final class Robot {
 
 
     }
-    static void collect() {
-        co.collect();
-        co.open();
-    }
-    static void deliver1stBlock() {
-        if(pb == BlockPosition.CENTER) dThis = dCenter;
-        if(pb == BlockPosition.LEFT) dThis = dLeft;
-        if(pb == BlockPosition.RIGHT) dThis = dRight;
-    }
+    static void collect1() {
+        if(pb == BlockPosition.LEFT) angle = angleL;
+        if(pb == BlockPosition.CENTER) angle = angleC;
+        if(pb == BlockPosition.RIGHT) angle = angleR;
+        me.turnDegrees(angle);
 
+        Robot.fwdTicks(1400, 0, 0.5);
+        co.half();
+        lop.sleep(500);
+        co.zero();
+    }
+    static void deliver1() {
+        Robot.fwdTicks(-1200, 0);
+        me.turnDegrees(90 - angleL);
+        Robot.fwdTicks(3000,0);
+        co.push();
+        lop.sleep(1000);
+        co.zero();
+    }
+    private static void collect2() {
+        Robot.fwdTicks(800, 0, 0.5);
+        co.half();
+        lop.sleep(500);
+        co.zero();
+    }
+    static void deliver2ndBlock() {
+        fwdTicks(-1000,0);
+    }
+    static void goBackFor2ndBlock() {
+        Robot.fwdTicks(-4000,0);
+        me.turnDegrees(-90);
+    }
+    static void collectSecond() {
+        co.collect();
+
+        if(pb == BlockPosition.LEFT);//I'll deal with this later...
+        else if(pb == BlockPosition.CENTER) {
+            collect2();
+        }
+        else if(pb == BlockPosition.RIGHT) {
+            strafeTicks(0,0);
+            collect2();
+        }
+
+    }
 
     private static double turnForStableAngle(double targetHeading) {
         double diff = targetHeading - imu.getAbsoluteHeading();
@@ -407,10 +408,6 @@ public final class Robot {
         if(p < 0 && p > -Mecanum.AUTO_MIN_SPEED) p = -Mecanum.AUTO_MIN_SPEED;
 
         return p;
-    }
-    private static boolean distanceIsTooFar(double d, double target) {
-        if(Double.isNaN(d)) return true;
-        return d > target;
     }
 
     public static void sayTFPosition() {

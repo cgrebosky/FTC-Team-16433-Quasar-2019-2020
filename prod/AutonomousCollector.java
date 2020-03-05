@@ -3,21 +3,34 @@ package quasar.prod;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import quasar.lib.macro.PartialMacroPlayer;
+
 @Autonomous(name = "Collector Autonomous", group = "Prod")
 public final class AutonomousCollector extends LinearOpMode {
+
+    PartialMacroPlayer pm = new PartialMacroPlayer(this, "AUTO Block Delivery 1");
+
     @Override
     public void runOpMode() throws InterruptedException {
         Robot.create(this);
         Robot.autoInit();
 
+        pm.init();
+
         waitForStart();
 
+
         Robot.getPosition();
-        Robot.moveCapstoneOutOfWay();
-        Robot.collect();
-        Robot.fwdToBlock();
-        Robot.fwdTicksSlow(500,0);
-        Robot.fwdTicks(-750,0);
+        Robot.miscLateInit();
+        Robot.collect1();
+        Robot.deliver1stBlock();
+        sleep(3000); //Represents our macro :/
+        Robot.goBackFor2ndBlock();
+        Robot.collectSecond();
+        Robot.deliver2ndBlock();
+
+        Robot.imu.interrupt();
+        Robot.tfs.interrupt();
 
         while(opModeIsActive()) {
             telemetry.addData("Pos", Robot.pb);
