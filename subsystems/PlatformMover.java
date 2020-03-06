@@ -47,12 +47,12 @@ public final class PlatformMover extends SubSystem implements MacroSystem {
     }
     //endregion
 
-    private void lowerHooks() {
+    public void lowerHooks() {
         isDown = true;
         platformLeft.setPosition(LEFT_DOWN);
         platformRight.setPosition(RIGHT_DOWN);
     }
-    private void raiseHooks() {
+    public void raiseHooks() {
         isDown = false;
         platformLeft.setPosition(LEFT_UP);
         platformRight.setPosition(RIGHT_UP);

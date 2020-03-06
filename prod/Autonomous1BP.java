@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import quasar.lib.macro.PartialMacroPlayer;
 
-@Autonomous(name = "Collector Autonomous", group = "Prod")
-public final class AutonomousCollector extends LinearOpMode {
+import static quasar.prod.Robot.fwdTicks;
+
+@Autonomous(name = "1 Block & Platform Autonomous", group = "Prod")
+public final class Autonomous1BP extends LinearOpMode {
 
     PartialMacroPlayer pm = new PartialMacroPlayer(this, "AUTO Block Delivery 1");
 
@@ -19,33 +21,17 @@ public final class AutonomousCollector extends LinearOpMode {
 
         waitForStart();
 
-
+        Robot.fwdTicks(550,0);
         Robot.getPosition();
         Robot.miscLateInit();
         Robot.collect1();
-        Robot.deliver1stBlock();
-        sleep(3000); //Represents our macro :/
-        Robot.goBackFor2ndBlock();
-        Robot.collectSecond();
-        Robot.deliver2ndBlock();
-
-        Robot.imu.interrupt();
-        Robot.tfs.interrupt();
-
-        while(opModeIsActive()) {
-            telemetry.addData("Pos", Robot.pb);
-            telemetry.update();
-        }
+        Robot.deliver1();
+        pm.playMacro();
 
         //L>350 = C
         //L in 350-150 = L
 
         //FWD 1500
         //L = -280, C = 200, R = 650
-    }
-
-    private void say(Object o) {
-        telemetry.addLine(o.toString());
-        telemetry.update();
     }
 }

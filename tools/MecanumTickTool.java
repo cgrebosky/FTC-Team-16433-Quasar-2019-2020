@@ -10,16 +10,10 @@ public final class MecanumTickTool extends OpMode {
 
     private Mecanum m = new Mecanum();
 
-    private Mecanum.EncoderPosition startPos;
-    private Mecanum.EncoderPosition currentPos;
-
     @Override
     public void init() {
         m.create(this);
         m.init();
-
-        startPos   = m.new EncoderPosition();
-        currentPos = m.new EncoderPosition();
 
         telemetry.addLine("READY");
         telemetry.update();
@@ -27,8 +21,6 @@ public final class MecanumTickTool extends OpMode {
 
     @Override
     public void loop() {
-        if(gamepad1.a) startPos = m.new EncoderPosition(); //This is some spicy notation, I didn't even know you could do this :D
-        currentPos              = m.new EncoderPosition();
 
         double fwd    = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
@@ -38,16 +30,10 @@ public final class MecanumTickTool extends OpMode {
         strafe = Math.abs(strafe) > 0.15 ? strafe : 0;
         turn = Math.abs(turn) > 0.15 ? turn : 0;
 
-        //This makes it so we can ONLY go forward or sideways at one time, we can't go diagonally
-        if(Math.abs(fwd) > Math.abs(strafe)) strafe = 0;
-        else fwd = 0;
-
         m.setPowers(fwd, strafe, turn);
 
-        telemetry.addData("Start Position", startPos);
-        telemetry.addData("Current Position", currentPos);
-        telemetry.addData("FWD", currentPos.subtract(startPos).fwdTicks());
-        telemetry.addData("STRAFE", currentPos.subtract(startPos).strafeTicks());
+        telemetry.addData("(fl, fr, bl, br)", "("+m.fl.getCurrentPosition() + ", " +
+                m.fr.getCurrentPosition() + ", " + m.bl.getCurrentPosition() + ", " + m.br.getCurrentPosition() + ")");
         telemetry.update();
     }
 

@@ -14,69 +14,7 @@ import quasar.subsystems.threaded.VuforiaPositionDetector;
 //TODO: Make Gyro-stabilized tele-op options?
 public final class Mecanum extends SubSystem implements MacroSystem {
 
-    public class EncoderPosition {
-        int fl, fr, bl, br;
-
-        /**
-         * Constructor where you give it integer values for all positions.  Has some use, but
-         * EncoderPosition() would honestly be used more
-         * @param fl Front Left position
-         * @param fr Front Right position
-         * @param bl Back Left position
-         * @param br Back Right position
-         */
-        EncoderPosition(int fl, int fr, int bl, int br) {
-            this.fl = fl;
-            this.fr = fr;
-            this.bl = bl;
-            this.br = br;
-        }
-
-        /**
-         * Gets the current position.  This is just a nice shorthand for me :)
-         */
-        public EncoderPosition() {
-            this.fl = Mecanum.this.fl.getCurrentPosition();
-            this.fr = Mecanum.this.fr.getCurrentPosition();
-            this.bl = Mecanum.this.bl.getCurrentPosition();
-            this.br = Mecanum.this.br.getCurrentPosition();
-        }
-
-        public EncoderPosition fwd(int ticks) {
-            return new EncoderPosition(
-                    fl + ticks,
-                    fr + ticks,
-                    bl + ticks,
-                    br + ticks
-            );
-        }
-        public EncoderPosition strafe(int ticks) {
-            return new EncoderPosition(
-                    fl + ticks,
-                    fr - ticks,
-                    bl - ticks,
-                    br + ticks
-            );
-        }
-
-        public int fwdTicks() {
-            return (fl + fr + bl + br) / 4;
-        }
-        public int strafeTicks() {
-            return (fl - fr - bl + br) / 4;
-        }
-
-        public EncoderPosition subtract(EncoderPosition b) {
-            return new EncoderPosition(this.fl - b.fl, this.fr - b.fr, this.bl - b.bl, this.br - b.br);
-        }
-
-        @Override
-        public String toString() {
-            return "{" + fl + ", " + fr + ", " + bl + ", " + br + "}";
-        }
-    }
-
-    private DcMotor fl, fr, bl, br;
+    public DcMotor fl, fr, bl, br;
     private double powFL, powFR, powBL, powBR;
     private double fwd, strafe, turn;
 
@@ -84,8 +22,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     public static final double CTRL_THRESHOLD = 0.1;
     public static final double AUTO_MAX_SPEED = 1.0;
-    public static final double AUTO_MIN_SPEED = 0.4;
-    public static final double AUTO_ERR = 30;
+    public static final double AUTO_MIN_SPEED = 0.25;
+    public static final double AUTO_ERR = 20;
 
     //region SubSystem
     @Override
@@ -198,8 +136,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
     private void turnTicks(int t) {
         int endTicks = bl.getCurrentPosition() + t;
-        while(!MoreMath.isClose(bl.getCurrentPosition(), endTicks, 40) && lop.opModeIsActive()) {
-            double pwr = (endTicks - bl.getCurrentPosition()) * 0.005;
+        while(!MoreMath.isClose(bl.getCurrentPosition(), endTicks, 20) && lop.opModeIsActive()) {
+            double pwr = (endTicks - bl.getCurrentPosition()) * 0.002;
             if(pwr > 0) pwr = MoreMath.clip(pwr, Mecanum.AUTO_MIN_SPEED, Mecanum.AUTO_MAX_SPEED);
             if(pwr < 0) pwr = MoreMath.clip(pwr, -Mecanum.AUTO_MIN_SPEED, -Mecanum.AUTO_MAX_SPEED);
 
@@ -212,8 +150,9 @@ public final class Mecanum extends SubSystem implements MacroSystem {
 
         setPowers(0,0,0);
     }
+    //d>0 goes to the left.  This makes it consistent with IMU readings :D
     public void turnDegrees(double deg) {
-        turnTicks((int) (deg * 9.8));
+        turnTicks((int) (deg * -9.8));
     }
 
     //region Macro
