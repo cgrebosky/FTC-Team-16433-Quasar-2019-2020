@@ -60,11 +60,10 @@ data class MacroState(var time: Long): Serializable {
         val potentialFileNames = arrayOf("MacroRecording (DEBUG - DO NOT USE)",
                 "RED Platform Mover",
                 "BLUE Platform Mover",
-                "RED Block Mover",
-                "BLUE Block Mover",
-                "AUTO Platform Mover",
-                "AUTO Block Delivery 1",
-                "AC1", "AR1", "AL1"
+                "Forward 2 Meters",
+                "AUTO Deliver Block",
+                "AUTO Platform RED",
+                "AUTO Platform BLUE"
         )
         var filename = "MacroRecording"
         val path = "/${Environment.getExternalStorageDirectory().path}/FIRST/macro/"
