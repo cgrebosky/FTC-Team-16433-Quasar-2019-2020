@@ -40,14 +40,15 @@ public class TFSkystoneDetector extends ThreadSubSystem {
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
+                skystoneIsVisible = false;
                 for (Recognition r : updatedRecognitions) {
-                    if(r.getLabel().equals("Skystone")) {
+                    if(r.getLabel().equals("Skystone") && r.getTop() > 750) {
                         x = r.getLeft();
                         y = r.getTop();
                         skystoneIsVisible = true;
                     }
                 }
-            } else skystoneIsVisible = false;
+            }
         }
     }
 
@@ -75,7 +76,7 @@ public class TFSkystoneDetector extends ThreadSubSystem {
         int tfodMonitorViewId = hmap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hmap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minimumConfidence = 0.3;
+        tfodParameters.minimumConfidence = 0.5;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }

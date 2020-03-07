@@ -257,7 +257,7 @@ public final class Robot {
         li.openClaw();
     }
     static void getPosition() {
-        long et = System.currentTimeMillis() + 800;
+        long et = System.currentTimeMillis() + 15000;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             double pos = tfs.getX();
@@ -269,6 +269,7 @@ public final class Robot {
             lop.telemetry.addData("C", c);
             lop.telemetry.addData("R", r);
             lop.telemetry.addData("pos", pos);
+            lop.telemetry.addData("Visible", tfs.isSkystoneIsVisible());
             lop.telemetry.update();
         }
         if(l > c && l > r) pb = BlockPosition.LEFT;
@@ -310,7 +311,7 @@ public final class Robot {
         co.collect();
         co.open();
         fwdTicks(2000, 0, 0.6);
-        fwdTicks(-1130, 0);
+        fwdTicks(-1100, 0);
         co.stop();
         co.half();
         li.closeClaw();
@@ -340,24 +341,6 @@ public final class Robot {
         platRed.playMacro();
     }
 
-    private static void fwdToWall() {
-        while(lop.opModeIsActive() && !MoreMath.isClose(dist.getDistance(CM), blockDist, 3)) {
-            double fwd = (dist.getDistance(CM) - blockDist) * 0.005;
-            fwd = limitMecanumPwr(fwd);
-
-            me.setPowers(fwd, 0, turnForStableAngle(90));
-        }
-        me.setPowers(0,0,0);
-    }
-    private static void fwdToBackWall() {
-        while(lop.opModeIsActive() && !MoreMath.isClose(dist.getDistance(CM), 70, 6)) {
-            double fwd = (dist.getDistance(CM) - blockDist) * 0.002;
-            fwd = limitMecanumPwr(fwd);
-
-            me.setPowers(fwd, 0, turnForStableAngle(-90));
-        }
-        me.setPowers(0,0,0);
-    }
     private static void orientForBPos() {
         if(pb == BlockPosition.LEFT) angle = angleL;
         else if(pb == BlockPosition.CENTER) angle = angleC;
