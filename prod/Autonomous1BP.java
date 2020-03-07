@@ -24,8 +24,8 @@ public final class Autonomous1BP extends LinearOpMode {
         Robot.fwdTicks(550,0);
         Robot.getPosition();
         Robot.miscLateInit();
-        Robot.collect1();
-        Robot.deliver1();
+        Robot.collect1_();
+        Robot.deliver1_();
         pm.playMacro();
 
         //L>350 = C

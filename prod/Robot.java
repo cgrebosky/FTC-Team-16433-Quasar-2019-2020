@@ -1,11 +1,14 @@
 package quasar.prod;
 
+import android.provider.Telephony;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
+import quasar.lib.macro.PartialMacroPlayer;
 import quasar.subsystems.*;
 import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.TFSkystoneDetector;
@@ -15,6 +18,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.C
 public final class Robot {
     static Side s = Side.RED;
     static BlockPosition pb = BlockPosition.CENTER;
+
+    static PartialMacroPlayer deliver, platRed, platBlue; //We have to lateinit these because lop isn't set
 
     private static DistanceSensor dist;
 
@@ -30,6 +35,7 @@ public final class Robot {
 
     private static int angleL = 7, angleC = -13, angleR = -25, angle = angleC;
     private static double DISTL = 26, DISTC = 46, DISTR = 66, blockDist = DISTC;
+    private static int B_DISTL = 640, B_DISTC = 270, B_DISTR = -100, B_DIST = B_DISTC;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -60,7 +66,8 @@ public final class Robot {
         imu.start();
         say("IMU initialized");
 
-        initTFOD();
+        tfs.create(lop, false);
+        tfs.start();
         say("Tensorflow initialized");
 
         co.autoInit();
@@ -78,12 +85,19 @@ public final class Robot {
         cp.autoInit();
         say("Capstone Depositor initialized");
 
-        dist = lop.hardwareMap.get(DistanceSensor.class, "distance");
+        deliver  = new PartialMacroPlayer(lop, "AUTO Deliver Block");
+        deliver.init();
+        platRed = new PartialMacroPlayer(lop, "AUTO Platform RED");
+        platRed.init();
+        platBlue = new PartialMacroPlayer(lop, "AUTO Platform BLUE");
+        platBlue.init();
+        say("Macros initialized");
 
-    }
-    static void initTFOD() {
-        tfs.create(lop, false);
-        tfs.start();
+        dist = lop.hardwareMap.get(DistanceSensor.class, "distance");
+        say("Sensors initialized");
+
+        say("Robot initialized :D");
+
     }
     public static void init() {
         co.init();
@@ -176,18 +190,27 @@ public final class Robot {
     static void fwdTicks(int ticks, double targetHeading, double pwr) {
         int start = me.fl.getCurrentPosition();
         int end = start + ticks;
+        final int NEAR_EN = 500;
         final int END_DIFF = 50;
-        if(ticks > 0)      while(lop.opModeIsActive() && me.fl.getCurrentPosition() < end - END_DIFF) {
-            me.setPowers(pwr, 0, turnForStableAngle(targetHeading));
+        if(ticks > 0)      while(lop.opModeIsActive()) {
+            int curr = me.fl.getCurrentPosition();
+            if(curr < end - NEAR_EN) me.setPowers(pwr, 0, turnForStableAngle(targetHeading));
+            else if(curr < end && curr < end - END_DIFF) me.setPowers(0.5, 0, turnForStableAngle(targetHeading));
+            else break;
         }
-        else if(ticks < 0) while(lop.opModeIsActive() && me.fl.getCurrentPosition() > end + END_DIFF) {
+        else if(ticks < 0) while(lop.opModeIsActive()) {
             me.setPowers(-pwr, 0, turnForStableAngle(targetHeading));
+
+            int curr = me.fl.getCurrentPosition();
+            if(curr > end + NEAR_EN) me.setPowers(-pwr, 0, turnForStableAngle(targetHeading));
+            else if(curr > end && curr > end + END_DIFF) me.setPowers(-0.5, 0, turnForStableAngle(targetHeading));
+            else break;
         }
 
         me.setPowers(0,0,0);
     }
     static void fwdTicks(int ticks, double targetHeading) {
-        fwdTicks(ticks, targetHeading, 0.7);
+        fwdTicks(ticks, targetHeading, 0.8);
     }
     static void strafeTicks(int ticks, double targetHeading, double pwr) {
         int start = me.fl.getCurrentPosition();
@@ -204,20 +227,6 @@ public final class Robot {
     }
     static void strafeTicks(int ticks, double targetHeading) {
         strafeTicks(ticks, targetHeading, 0.7);
-    }
-
-    static void FRDiagonalTicks(int ticks, double targetHeading, double pwr) {
-        int start = me.fl.getCurrentPosition();
-        int end = start + ticks;
-        final int END_DIFF = 50;
-        if(ticks > 0)      while(lop.opModeIsActive() && me.fl.getCurrentPosition() < end - END_DIFF) {
-            me.setPowers(pwr, pwr, turnForStableAngle(targetHeading));
-        }
-        else if(ticks < 0) while(lop.opModeIsActive() && me.fl.getCurrentPosition() > end + END_DIFF) {
-            me.setPowers(-pwr, -pwr, turnForStableAngle(targetHeading));
-        }
-
-        me.setPowers(0,0,0);
     }
 
     static void turnDegAbsolute(double target) {
@@ -248,12 +257,12 @@ public final class Robot {
         li.openClaw();
     }
     static void getPosition() {
-        long et = System.currentTimeMillis() + 1500;
+        long et = System.currentTimeMillis() + 800;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             double pos = tfs.getX();
-            if (pos > 100) l ++;
-            else if (pos <= 100 && tfs.isSkystoneIsVisible()) r ++;
+            if (pos > 100 && tfs.isSkystoneIsVisible()) l ++;
+            else if (pos <= 80 && tfs.isSkystoneIsVisible()) r ++;
             else c ++;
 
             lop.telemetry.addData("L", l);
@@ -269,15 +278,18 @@ public final class Robot {
         if(pb == BlockPosition.LEFT) {
             angle = angleL;
             blockDist = DISTL;
+            B_DIST = B_DISTL;
         } else if (pb == BlockPosition.CENTER) {
             angle = angleC;
             blockDist = DISTC;
+            B_DIST = B_DISTC;
         } else {
             angle = angleR;
             blockDist = DISTR;
+            B_DIST = B_DISTR;
         }
     }
-    static void collect1() {
+    static void collect1_() {
         co.collect();
         co.open();
         orientForBPos();
@@ -286,21 +298,46 @@ public final class Robot {
         fwdTicks(-1000, angle);
         co.zero();
     }
-    static void deliver1() {
+    static void deliver1_() {
         turnDegAbsolute(-90);
         fwdTicks(3500,-90);
         me.turnDegrees(-90);
     }
-    static void collect2() {
-        turnDegAbsolute(90);
-        fwdToWall();
-        co.zero();
-        strafeTicks(1100, 90);
+
+    static void collect1stBlock() {
+        li.openClaw();
+        strafeTicks(B_DIST, 0);
         co.collect();
-        fwdTicks(500, 90);
-        strafeTicks(-1100, 90);
-        me.turnDegrees(180);
-        fwdToBackWall();
+        co.open();
+        fwdTicks(2000, 0, 0.6);
+        fwdTicks(-1130, 0);
+        co.stop();
+        co.half();
+        li.closeClaw();
+    }
+    static void deliver1stBlock() {
+        turnDegAbsolute(90);
+        fwdTicks(-2460 + B_DIST,90);
+        turnDegAbsolute(135);
+        deliver.playMacro();
+        turnDegAbsolute(90);
+    }
+    static void collect2ndBlock() {
+        li.openClaw();
+        fwdTicks(3200 - B_DIST, 90);
+        co.open();
+        co.collect();
+        strafeTicks(1050, 90);
+        fwdTicks(300,90,0.7);
+        strafeTicks(-1000,90);
+        co.half();
+        co.zero();
+        li.closeClaw();
+    }
+    static void deliver2ndBlock() {
+        fwdTicks(-4500 + B_DIST, 90);
+        turnDegAbsolute(180);
+        platRed.playMacro();
     }
 
     private static void fwdToWall() {
@@ -335,22 +372,16 @@ public final class Robot {
         return MoreMath.clip( -diff * P, -.5, .5 );
     }
     private static double limitMecanumPwr(double pwr) {
-        double p = MoreMath.clip(pwr, -Mecanum.AUTO_MAX_SPEED, Mecanum.AUTO_MAX_SPEED);
+        double p = MoreMath.clip(pwr, -0.8, 0.8);
 
-        if(p > 0 && p < Mecanum.AUTO_MIN_SPEED) p = Mecanum.AUTO_MIN_SPEED;
-        if(p < 0 && p > -Mecanum.AUTO_MIN_SPEED) p = -Mecanum.AUTO_MIN_SPEED;
+        if(p > 0 && p < 0.4) p = 0.4;
+        if(p < 0 && p > -0.4) p = -0.4;
 
         return p;
     }
 
-    public static void sayTFPosition() {
-        lop.telemetry.addData("X,Y", tfs.getX() + ", " + tfs.getY());
-    }
-    static void goToBlock() {
-        while(lop.opModeIsActive() && !tfs.isSkystoneIsVisible()) me.setPowers(0, -0.4, turnForStableAngle(0));
-
-
-        me.setPowers(0,0,0);
+    public static void disableLimits() {
+        li.limitsActive = false;
     }
     //endregion
 }

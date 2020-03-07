@@ -21,9 +21,6 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     private boolean slowMode = false;
 
     public static final double CTRL_THRESHOLD = 0.1;
-    public static final double AUTO_MAX_SPEED = 1.0;
-    public static final double AUTO_MIN_SPEED = 0.25;
-    public static final double AUTO_ERR = 20;
 
     //region SubSystem
     @Override
@@ -138,8 +135,8 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         int endTicks = bl.getCurrentPosition() + t;
         while(!MoreMath.isClose(bl.getCurrentPosition(), endTicks, 20) && lop.opModeIsActive()) {
             double pwr = (endTicks - bl.getCurrentPosition()) * 0.002;
-            if(pwr > 0) pwr = MoreMath.clip(pwr, Mecanum.AUTO_MIN_SPEED, Mecanum.AUTO_MAX_SPEED);
-            if(pwr < 0) pwr = MoreMath.clip(pwr, -Mecanum.AUTO_MIN_SPEED, -Mecanum.AUTO_MAX_SPEED);
+            if(pwr > 0) pwr = MoreMath.clip(pwr, 0.5, 0.7);
+            if(pwr < 0) pwr = MoreMath.clip(pwr, -0.5, -0.7);
 
             bl.setPower(pwr);
             fl.setPower(pwr);

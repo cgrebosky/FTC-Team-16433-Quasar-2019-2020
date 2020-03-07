@@ -3,11 +3,10 @@ package quasar.prod;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import quasar.subsystems.SubSystem;
+import quasar.lib.macro.PartialMacroPlayer;
 
 @Autonomous(name = "2 Block & Platform Autonomous", group = "Prod")
 public final class Autonomous2BP extends LinearOpMode {
-
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -16,10 +15,12 @@ public final class Autonomous2BP extends LinearOpMode {
 
         waitForStart();
 
-        Robot.fwdTicks(1000,0);
-        Robot.fwdTicks(-1000,0,0.5);
-        Robot.strafeTicks(1000,0,0.5);
-        Robot.strafeTicks(-1000, 0, 0.5);
-        Robot.FRDiagonalTicks(1000, 0, 0.5);
+        Robot.fwdTicks(450,0);
+        Robot.miscLateInit();
+        Robot.getPosition();
+        Robot.collect1stBlock();
+        Robot.deliver1stBlock();
+        Robot.collect2ndBlock();
+        Robot.deliver2ndBlock();
     }
 }

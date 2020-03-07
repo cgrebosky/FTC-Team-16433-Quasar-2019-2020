@@ -22,6 +22,8 @@ public final class Lift extends SubSystem implements MacroSystem {
 
     private boolean clawIsOpen = false, angleIsOut = false;
 
+    public boolean limitsActive = true;
+
     //region SubSystem
     @Override
     public void init() {
@@ -107,8 +109,10 @@ public final class Lift extends SubSystem implements MacroSystem {
         double pwr = gamepad2.left_trigger - gamepad2.right_trigger;
         double rightPwr = pwr, leftPwr = pwr;
 
-        if(!limitLeft.getState() && leftPwr > 0) leftPwr = 0;
-        if(!limitRight.getState() && rightPwr > 0) rightPwr = 0;
+        if(limitsActive) {
+            if (!limitLeft.getState() && leftPwr > 0) leftPwr = 0;
+            if (!limitRight.getState() && rightPwr > 0) rightPwr = 0;
+        }
 
         liftLeft.setPower(leftPwr);
         liftRight.setPower(rightPwr);
@@ -123,47 +127,6 @@ public final class Lift extends SubSystem implements MacroSystem {
         claw.setPosition(CLAW_CLOSED);
     }
 
-    public void deliverBlock() {
-        long t = System.currentTimeMillis() + 1500;
-        while(lop.opModeIsActive() && System.currentTimeMillis() < t) {
-            extenderLeft.setPower(-0.95);
-            extenderRight.setPower(-0.95);
-        }
-        extenderLeft.setPower(0);
-        extenderRight.setPower(0);
-        clawAngle.setPosition(ANGLE_OUT);
-        claw.setPosition(CLAW_OPEN);
-
-        t = System.currentTimeMillis() + 1000;
-        while(lop.opModeIsActive() && System.currentTimeMillis() < t) {
-            liftLeft.setPower(-1);
-            liftRight.setPower(-1);
-        }
-        liftLeft.setPower(0);
-        liftRight.setPower(0);
-
-        claw.setPosition(CLAW_CLOSED);
-        clawAngle.setPosition(ANGLE_IN);
-
-
-    }
-
-    private void extendAndLift() {
-
-    }
-    private void lowerAndRetract() {
-        double t = System.currentTimeMillis() + 1000;
-        while(lop.opModeIsActive() && System.currentTimeMillis() < t) {
-            liftLeft.setPower(1);
-            liftRight.setPower(1);
-            extenderLeft.setPower(0.95);
-            extenderRight.setPower(0.95);
-        }
-        liftLeft.setPower(0);
-        liftRight.setPower(0);
-        extenderLeft.setPower(0);
-        extenderRight.setPower(0);
-    }
     //region Macro
     @Override
     public void recordMacroState() {

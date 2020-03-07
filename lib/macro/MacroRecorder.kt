@@ -30,6 +30,7 @@ class MacroRecorder: OpMode() {
     override fun init() {
         Robot.create(this)
         Robot.init()
+        Robot.disableLimits()
 
         var prevUp = gamepad1.dpad_up
         var prevDown = gamepad1.dpad_down
