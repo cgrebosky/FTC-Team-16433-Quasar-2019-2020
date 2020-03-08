@@ -12,7 +12,7 @@ import quasar.lib.macro.MacroSystem;
 
 public final class Lift extends SubSystem implements MacroSystem {
 
-    private final double CLAW_CLOSED = 0.8, CLAW_OPEN = 0.35, ANGLE_IN = 0.82, ANGLE_OUT = .07;
+    private final double CLAW_CLOSED = 0.8, CLAW_OPEN = 0.35, ANGLE_IN = 0.87, ANGLE_OUT = .08, ANGLE_HALF = 0.5;
 
     private DcMotor liftLeft, liftRight;
     private CRServo extenderLeft, extenderRight;

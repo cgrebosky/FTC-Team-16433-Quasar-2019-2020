@@ -18,9 +18,9 @@ public final class Autonomous2BP extends LinearOpMode {
         Robot.fwdTicks(450,0);
         Robot.miscLateInit();
         Robot.getPosition();
-//        Robot.collect1stBlock();
-//        Robot.deliver1stBlock();
-//        Robot.collect2ndBlock();
-//        Robot.deliver2ndBlock();
+        Robot.collect1stBlock();
+        Robot.deliver1stBlock();
+        Robot.collect2ndBlock();
+        Robot.deliver2ndBlock();
     }
 }

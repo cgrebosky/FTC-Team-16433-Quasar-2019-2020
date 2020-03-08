@@ -34,6 +34,8 @@ public final class MecanumTickTool extends OpMode {
 
         telemetry.addData("(fl, fr, bl, br)", "("+m.fl.getCurrentPosition() + ", " +
                 m.fr.getCurrentPosition() + ", " + m.bl.getCurrentPosition() + ", " + m.br.getCurrentPosition() + ")");
+        telemetry.addData("Fwd", m.getFwdPos());
+        telemetry.addData("Str", m.getStrPos());
         telemetry.update();
     }
 

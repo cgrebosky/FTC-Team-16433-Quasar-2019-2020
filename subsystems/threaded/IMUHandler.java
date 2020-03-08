@@ -46,15 +46,11 @@ public final class IMUHandler extends ThreadSubSystem {
         telemetry.addLine();
     }
     //endregion
-    //region Getters
+
     public synchronized double getAbsoluteHeading() {
         return heading;
-    }
-    public synchronized double getRelativeHeading() {
-        return heading - startHeading;
     }
     public synchronized double getStartHeading() {
         return startHeading;
     }
-    //endregion
 }

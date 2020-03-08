@@ -84,9 +84,6 @@ public class TFSkystoneDetector extends ThreadSubSystem {
     public synchronized double getX() {
         return x;
     }
-    public synchronized double getY() {
-        return y;
-    }
     public synchronized boolean isSkystoneIsVisible() {
         return skystoneIsVisible;
     }

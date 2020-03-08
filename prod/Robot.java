@@ -4,6 +4,8 @@ import android.provider.Telephony;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import quasar.lib.MoreMath;
@@ -14,6 +16,7 @@ import quasar.subsystems.threaded.IMUHandler;
 import quasar.subsystems.threaded.TFSkystoneDetector;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
+import static quasar.subsystems.Mecanum.STRAFE_COEF;
 
 public final class Robot {
     static Side s = Side.RED;
@@ -35,7 +38,7 @@ public final class Robot {
 
     private static int angleL = 7, angleC = -13, angleR = -25, angle = angleC;
     private static double DISTL = 26, DISTC = 46, DISTR = 66, blockDist = DISTC;
-    private static int B_DISTL = 640, B_DISTC = 270, B_DISTR = -100, B_DIST = B_DISTC;
+    private static int B_DISTL = -220, B_DISTC = 280, B_DISTR = 650, B_DIST = B_DISTC;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -49,6 +52,9 @@ public final class Robot {
         me.create(lop);
         pm.create(lop);
         cp.create(lop);
+
+        imu.create(lop);
+        tfs.create(lop);
     }
     public static void create(OpMode opm) {
         Robot.opm = opm;
@@ -62,11 +68,9 @@ public final class Robot {
     }
 
     static void autoInit() {
-        imu.create(lop, false);
         imu.start();
         say("IMU initialized");
 
-        tfs.create(lop, false);
         tfs.start();
         say("Tensorflow initialized");
 
@@ -136,10 +140,7 @@ public final class Robot {
         //ab.stop();
 
         imu.kill();
-        imu.interrupt();
-
         tfs.kill();
-        tfs.interrupt();
     }
     //endregion
     private static void say(Object o) {
@@ -166,65 +167,63 @@ public final class Robot {
     //endregion
 
     //region Autonomous
-    /*@SubSystem.Auto
-    void goToPositionVuforia(double endX, double endY) {
-        double startAngle = imu.getAbsoluteHeading();
-        while(lop.opModeIsActive() && vpd.imageIsVisible()) {
-            double angle = imu.getAbsoluteHeading();
-            double diff = startAngle - angle;
-            double turn = MoreMath.clip(-diff / 45, -0.6, 0.6);
-
-            double x = vpd.getX();
-            double y = vpd.getY();
-            double dx = endX - x;
-            double dy = endY - y;
-
-            double dmax = Math.max( Math.abs(dy), Math.abs(dx) );
-            double xPow = MoreMath.clip( dx / dmax, -0.3, 0.3);
-            double yPow = MoreMath.clip( dy / dmax, -0.3, 0.3);
-
-            me.setPowers(-xPow, yPow, turn);
-        }
-    }*/
 
     static void fwdTicks(int ticks, double targetHeading, double pwr) {
-        int start = me.fl.getCurrentPosition();
+        int start = me.getFwdPos();
         int end = start + ticks;
         final int NEAR_EN = 500;
         final int END_DIFF = 50;
         if(ticks > 0)      while(lop.opModeIsActive()) {
-            int curr = me.fl.getCurrentPosition();
+            int curr = me.getFwdPos();
             if(curr < end - NEAR_EN) me.setPowers(pwr, 0, turnForStableAngle(targetHeading));
-            else if(curr < end && curr < end - END_DIFF) me.setPowers(0.5, 0, turnForStableAngle(targetHeading));
+            else if(curr < end && curr < end - END_DIFF) me.setPowers(0.35, 0, turnForStableAngle(targetHeading));
             else break;
         }
         else if(ticks < 0) while(lop.opModeIsActive()) {
             me.setPowers(-pwr, 0, turnForStableAngle(targetHeading));
 
-            int curr = me.fl.getCurrentPosition();
+            int curr = me.getFwdPos();
             if(curr > end + NEAR_EN) me.setPowers(-pwr, 0, turnForStableAngle(targetHeading));
-            else if(curr > end && curr > end + END_DIFF) me.setPowers(-0.5, 0, turnForStableAngle(targetHeading));
+            else if(curr > end && curr > end + END_DIFF) me.setPowers(-0.35, 0, turnForStableAngle(targetHeading));
             else break;
         }
 
         me.setPowers(0,0,0);
     }
+    /*static void fwdTicks(int ticks, double targetHeading, double pwr) {
+        me.fl.setTargetPosition(me.fl.getCurrentPosition() + ticks);
+        me.setPowers(pwr, 0, turnForStableAngle(targetHeading));
+
+        while(lop.opModeIsActive() && me.fl.isBusy()) {
+            me.setPowers(pwr, 0, turnForStableAngle(targetHeading));
+        }
+        me.setPowers(0,0,0);
+    }*/
     static void fwdTicks(int ticks, double targetHeading) {
         fwdTicks(ticks, targetHeading, 0.8);
     }
     static void strafeTicks(int ticks, double targetHeading, double pwr) {
-        int start = me.fl.getCurrentPosition();
+        int start = me.getStrPos();
         int end = start + ticks;
         final int END_DIFF = 50;
-        if(ticks > 0)      while(lop.opModeIsActive() && me.fl.getCurrentPosition() < end - END_DIFF) {
+        if(ticks > 0)      while(lop.opModeIsActive() && me.getStrPos() < end - END_DIFF) {
             me.setPowers(0, pwr, turnForStableAngle(targetHeading));
         }
-        else if(ticks < 0) while(lop.opModeIsActive() && me.fl.getCurrentPosition() > end + END_DIFF) {
+        else if(ticks < 0) while(lop.opModeIsActive() && me.getStrPos() > end + END_DIFF) {
             me.setPowers(0, -pwr, turnForStableAngle(targetHeading));
         }
 
         me.setPowers(0,0,0);
     }
+    /*static void strafeTicks(int ticks, double targetHeading, double pwr) {
+        me.fl.setTargetPosition(me.fl.getCurrentPosition() + ticks);
+        me.setPowers(0, pwr, turnForStableAngle(targetHeading));
+
+        while (lop.opModeIsActive() && me.fl.isBusy()) {
+            me.setPowers(0, pwr, turnForStableAngle(targetHeading));
+        }
+        me.setPowers(0,0,0);
+    }*/
     static void strafeTicks(int ticks, double targetHeading) {
         strafeTicks(ticks, targetHeading, 0.7);
     }
@@ -238,13 +237,37 @@ public final class Robot {
         while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
             curr = imu.getAbsoluteHeading();
             diff = target - curr;
-
-            if(Math.abs(diff) > 30) me.setPowers(0,0,-Math.signum(diff) * 0.5);
-            else if(Math.abs(diff) > 15) me.setPowers(0,0,-Math.signum(diff) * 0.3);
-            else if(Math.abs(diff) > 5) me.setPowers(0,0,-Math.signum(diff) * 0.25);
+            if(Math.abs(diff) > 35) me.setPowers(0,0,-Math.signum(diff) * 0.7);
+            else if(Math.abs(diff) > 15) me.setPowers(0,0,-Math.signum(diff) * 0.35);
+            else me.setPowers(0,0,-0.35);
 
             opm.telemetry.addData("start", start);
             opm.telemetry.addData("end", target);
+            opm.telemetry.addData("curr", curr);
+            opm.telemetry.addData("diff", diff);
+            opm.telemetry.update();
+        }
+        me.setPowers(0,0,0);
+    }
+
+    /**
+     * The turnDegree function has a bit of trouble when dealing with 180±5 degrees (180 degrees is where
+     * the IMU internally switches from 180 to -179.99, which is difficult to account for), so I'm just
+     * making a whole separate function to do this.
+     */
+    static void turnTo180() {
+        me.setPowers(0,0,-Math.signum(180) * 0.5 / 3);
+
+        double curr = imu.getAbsoluteHeading() + 180;
+        double diff = 360 - curr;
+        while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
+            curr = imu.getAbsoluteHeading() + 180;
+            diff = 180 - curr;
+
+            if(Math.abs(diff) > 30) me.setPowers(0,0,-Math.signum(diff) * 0.65);
+            me.setPowers(0,0,-Math.signum(diff) * 0.3);
+
+            opm.telemetry.addData("end", 360);
             opm.telemetry.addData("curr", curr);
             opm.telemetry.addData("diff", diff);
             opm.telemetry.update();
@@ -257,7 +280,7 @@ public final class Robot {
         li.openClaw();
     }
     static void getPosition() {
-        long et = System.currentTimeMillis() + 15000;
+        long et = System.currentTimeMillis() + 1000;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             double pos = tfs.getX();
@@ -306,38 +329,38 @@ public final class Robot {
     }
 
     static void collect1stBlock() {
-        li.openClaw();
-        strafeTicks(B_DIST, 0);
-        co.collect();
         co.open();
-        fwdTicks(2000, 0, 0.6);
-        fwdTicks(-1100, 0);
+        li.openClaw();
+        strafeTicks((int) (B_DIST * STRAFE_COEF), 0);
+        co.collect();
+        fwdTicks(1700, 0, 0.6);
+        fwdTicks(-900, 0);
         co.stop();
         co.half();
         li.closeClaw();
     }
     static void deliver1stBlock() {
         turnDegAbsolute(90);
-        fwdTicks(-2460 + B_DIST,90);
-        turnDegAbsolute(135);
+        fwdTicks(-2500 + B_DIST,90);
+        turnDegAbsolute(168);
         deliver.playMacro();
         turnDegAbsolute(90);
     }
     static void collect2ndBlock() {
         li.openClaw();
-        fwdTicks(3200 - B_DIST, 90);
+        fwdTicks(3140 - B_DIST, 90);
         co.open();
         co.collect();
-        strafeTicks(1050, 90);
+        strafeTicks(900, 90);
         fwdTicks(300,90,0.7);
-        strafeTicks(-1000,90);
+        strafeTicks(-900,90);
         co.half();
         co.zero();
         li.closeClaw();
     }
     static void deliver2ndBlock() {
-        fwdTicks(-4500 + B_DIST, 90);
-        turnDegAbsolute(180);
+        fwdTicks(-4200 + B_DIST, 90);
+        me.turnDegrees(90);
         platRed.playMacro();
     }
 
@@ -353,14 +376,6 @@ public final class Robot {
         double diff = targetHeading - imu.getAbsoluteHeading();
         final double P = 0.018;
         return MoreMath.clip( -diff * P, -.5, .5 );
-    }
-    private static double limitMecanumPwr(double pwr) {
-        double p = MoreMath.clip(pwr, -0.8, 0.8);
-
-        if(p > 0 && p < 0.4) p = 0.4;
-        if(p < 0 && p > -0.4) p = -0.4;
-
-        return p;
     }
 
     public static void disableLimits() {

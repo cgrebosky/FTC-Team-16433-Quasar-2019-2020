@@ -14,7 +14,7 @@ public final class VuforiaTool extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        vf.create(this, false);
+        vf.create(this);
         vf.enableTelemetry();
         vf.start();
 

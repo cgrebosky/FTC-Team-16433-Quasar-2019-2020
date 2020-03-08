@@ -21,6 +21,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     private boolean slowMode = false;
 
     public static final double CTRL_THRESHOLD = 0.1;
+    public static final double STRAFE_COEF = 1.15;
 
     //region SubSystem
     @Override
@@ -35,10 +36,10 @@ public final class Mecanum extends SubSystem implements MacroSystem {
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -149,7 +150,14 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     }
     //d>0 goes to the left.  This makes it consistent with IMU readings :D
     public void turnDegrees(double deg) {
-        turnTicks((int) (deg * -9.8));
+        turnTicks((int) (deg * -11.7));
+    }
+
+    public int getFwdPos() {
+        return (fl.getCurrentPosition() + fr.getCurrentPosition() + bl.getCurrentPosition() + br.getCurrentPosition()) / 4;
+    }
+    public int getStrPos() {
+        return (fl.getCurrentPosition() - fr.getCurrentPosition() - bl.getCurrentPosition() + br.getCurrentPosition()) / 4;
     }
 
     //region Macro
