@@ -1,21 +1,16 @@
 package quasar.prod;
 
-import android.provider.Telephony;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.PartialMacroPlayer;
 import quasar.subsystems.*;
-import quasar.subsystems.threaded.IMUHandler;
-import quasar.subsystems.threaded.TFSkystoneDetector;
+import quasar.subsystems.sensory.IMUHandler;
+import quasar.subsystems.sensory.TFSkystoneDetector;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
 import static quasar.subsystems.Mecanum.STRAFE_COEF;
 
 public final class Robot {
@@ -65,10 +60,10 @@ public final class Robot {
     }
 
     static void autoInit() {
-        imu.start();
+        imu.autoInit();
         say("IMU initialized");
 
-        tfs.start();
+        tfs.autoInit();
         say("Tensorflow initialized");
 
         co.autoInit();
@@ -134,10 +129,6 @@ public final class Robot {
         me.stop();
         pm.stop();
         cp.stop();
-        //ab.stop();
-
-        imu.kill();
-        tfs.kill();
     }
     //endregion
     private static void say(Object o) {

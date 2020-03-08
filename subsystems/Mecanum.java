@@ -1,15 +1,11 @@
 package quasar.subsystems;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import quasar.lib.MoreMath;
 import quasar.lib.macro.MacroState;
 import quasar.lib.macro.MacroSystem;
-import quasar.prod.Side;
-import quasar.subsystems.threaded.IMUHandler;
-import quasar.subsystems.threaded.VuforiaPositionDetector;
 
 //TODO: Make Gyro-stabilized tele-op options?
 public final class Mecanum extends SubSystem implements MacroSystem {

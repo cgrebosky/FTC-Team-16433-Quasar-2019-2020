@@ -1,4 +1,4 @@
-package quasar.subsystems.threaded;
+package quasar.subsystems.sensory;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
@@ -7,9 +7,9 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-import quasar.subsystems.ThreadSubSystem;
+import quasar.subsystems.SubSystem;
 
-public class TFSkystoneDetector extends ThreadSubSystem {
+public class TFSkystoneDetector extends SubSystem {
 
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
@@ -26,7 +26,7 @@ public class TFSkystoneDetector extends ThreadSubSystem {
 
     //region Subsystem
     @Override
-    protected void _init() {
+    public void init() {
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) initTfod();
@@ -36,7 +36,7 @@ public class TFSkystoneDetector extends ThreadSubSystem {
     }
 
     @Override
-    protected void _loop() {
+    public void loop() {
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
@@ -50,15 +50,16 @@ public class TFSkystoneDetector extends ThreadSubSystem {
                 }
             }
         }
+        postLoop();
     }
 
     @Override
-    protected void _stop() {
+    public void stop() {
         tfod.shutdown();
     }
 
     @Override
-    protected void _telemetry() {
+    protected void telemetry() {
         telemetry.addData("(x ,y)","(" + x + ", " + y + ")");
     }
     //endregion

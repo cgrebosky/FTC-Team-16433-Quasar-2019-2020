@@ -1,10 +1,10 @@
-package quasar.subsystems.threaded;
+package quasar.subsystems.sensory;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
-import quasar.subsystems.ThreadSubSystem;
+import quasar.subsystems.SubSystem;
 
-public final class IMUHandler extends ThreadSubSystem {
+public final class IMUHandler extends SubSystem {
 
     private double heading = 0;
     private double startHeading = 0;
@@ -13,7 +13,7 @@ public final class IMUHandler extends ThreadSubSystem {
 
     //region SubSystem
     @Override
-    protected void _init() {
+    public void init() {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
         parameters.mode                = BNO055IMU.SensorMode.IMU;
@@ -29,17 +29,19 @@ public final class IMUHandler extends ThreadSubSystem {
     }
 
     @Override
-    protected void _loop() {
+    public void loop() {
         heading = imu.getAngularOrientation().firstAngle;
+
+        postLoop();
     }
 
     @Override
-    protected void _stop() {
+    public void stop() {
         imu.close();
     }
 
     @Override
-    protected void _telemetry() {
+    protected void telemetry() {
         telemetry.addLine("IMU");
         telemetry.addData("    Heading", heading);
         telemetry.addData("    Initial Heading", startHeading);
@@ -47,10 +49,8 @@ public final class IMUHandler extends ThreadSubSystem {
     }
     //endregion
 
-    public synchronized double getAbsoluteHeading() {
+    public  double getAbsoluteHeading() {
+        heading = imu.getAngularOrientation().firstAngle;
         return heading;
-    }
-    public synchronized double getStartHeading() {
-        return startHeading;
     }
 }
