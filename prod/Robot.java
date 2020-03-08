@@ -35,10 +35,7 @@ public final class Robot {
     
     private static IMUHandler imu = new IMUHandler();
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
-
-    private static int angleL = 7, angleC = -13, angleR = -25, angle = angleC;
-    private static double DISTL = 26, DISTC = 46, DISTR = 66, blockDist = DISTC;
-    private static int B_DISTL = -220, B_DISTC = 280, B_DISTR = 650, B_DIST = B_DISTC;
+    private static int B_DISTL = -190, B_DISTC = 240, B_DISTR = 615, B_DIST = B_DISTC;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -168,7 +165,7 @@ public final class Robot {
 
     //region Autonomous
 
-    static void fwdTicks(int ticks, double targetHeading, double pwr) {
+    /*static void fwdTicks(int ticks, double targetHeading, double pwr) {
         int start = me.getFwdPos();
         int end = start + ticks;
         final int NEAR_EN = 500;
@@ -188,6 +185,25 @@ public final class Robot {
             else break;
         }
 
+        me.setPowers(0,0,0);
+    }*/
+    static void fwdTicks(int ticks, double targetHeading, double pwr) {
+        int start = me.getFwdPos();
+        int end = start + ticks;
+        int curr = start;
+        int diff = end - curr;
+
+        final double P = 0.002;
+
+        while(Math.abs(diff) > 20 && lop.opModeIsActive()) {
+            curr = me.getFwdPos();
+            diff = end - curr;
+            double fwd = pwr * P * diff;
+            if(Math.abs(fwd) < 0.25) fwd = Math.signum(fwd) * 0.25;
+            me.setPowers(fwd, 0, turnForStableAngle(targetHeading));
+            lop.telemetry.addData("diff", diff);
+            lop.telemetry.update();
+        }
         me.setPowers(0,0,0);
     }
     /*static void fwdTicks(int ticks, double targetHeading, double pwr) {
@@ -234,12 +250,11 @@ public final class Robot {
         double start = imu.getAbsoluteHeading();
         double curr = start;
         double diff = target - curr;
-        while(Math.abs(diff) > 2 && lop.opModeIsActive()) {
+        while(Math.abs(diff) > 6 && lop.opModeIsActive()) {
             curr = imu.getAbsoluteHeading();
             diff = target - curr;
             if(Math.abs(diff) > 35) me.setPowers(0,0,-Math.signum(diff) * 0.7);
-            else if(Math.abs(diff) > 15) me.setPowers(0,0,-Math.signum(diff) * 0.35);
-            else me.setPowers(0,0,-0.35);
+            else me.setPowers(0,0,-Math.signum(diff) * 0.35);
 
             opm.telemetry.addData("start", start);
             opm.telemetry.addData("end", target);
@@ -300,32 +315,12 @@ public final class Robot {
         else pb = BlockPosition.RIGHT;
 
         if(pb == BlockPosition.LEFT) {
-            angle = angleL;
-            blockDist = DISTL;
             B_DIST = B_DISTL;
         } else if (pb == BlockPosition.CENTER) {
-            angle = angleC;
-            blockDist = DISTC;
             B_DIST = B_DISTC;
         } else {
-            angle = angleR;
-            blockDist = DISTR;
             B_DIST = B_DISTR;
         }
-    }
-    static void collect1_() {
-        co.collect();
-        co.open();
-        orientForBPos();
-        fwdTicks(1400, angle, 0.4);
-        co.half();
-        fwdTicks(-1000, angle);
-        co.zero();
-    }
-    static void deliver1_() {
-        turnDegAbsolute(-90);
-        fwdTicks(3500,-90);
-        me.turnDegrees(-90);
     }
 
     static void collect1stBlock() {
@@ -334,7 +329,7 @@ public final class Robot {
         strafeTicks((int) (B_DIST * STRAFE_COEF), 0);
         co.collect();
         fwdTicks(1700, 0, 0.6);
-        fwdTicks(-900, 0);
+        fwdTicks(-1100, 0,0.7);
         co.stop();
         co.half();
         li.closeClaw();
@@ -342,13 +337,13 @@ public final class Robot {
     static void deliver1stBlock() {
         turnDegAbsolute(90);
         fwdTicks(-2500 + B_DIST,90);
-        turnDegAbsolute(168);
+        me.turnDegrees(90);
         deliver.playMacro();
         turnDegAbsolute(90);
     }
     static void collect2ndBlock() {
         li.openClaw();
-        fwdTicks(3140 - B_DIST, 90);
+        fwdTicks(3200 - B_DIST, 90);
         co.open();
         co.collect();
         strafeTicks(900, 90);
@@ -362,14 +357,6 @@ public final class Robot {
         fwdTicks(-4200 + B_DIST, 90);
         me.turnDegrees(90);
         platRed.playMacro();
-    }
-
-    private static void orientForBPos() {
-        if(pb == BlockPosition.LEFT) angle = angleL;
-        else if(pb == BlockPosition.CENTER) angle = angleC;
-        else if (pb == BlockPosition.RIGHT) angle = angleR;
-
-        me.turnDegrees(angle);
     }
 
     private static double turnForStableAngle(double targetHeading) {

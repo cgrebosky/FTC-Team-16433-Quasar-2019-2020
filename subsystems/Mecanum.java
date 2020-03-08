@@ -21,7 +21,7 @@ public final class Mecanum extends SubSystem implements MacroSystem {
     private boolean slowMode = false;
 
     public static final double CTRL_THRESHOLD = 0.1;
-    public static final double STRAFE_COEF = 1.15;
+    public static final double STRAFE_COEF = 1.27;
 
     //region SubSystem
     @Override
