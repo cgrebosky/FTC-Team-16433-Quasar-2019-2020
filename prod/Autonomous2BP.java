@@ -22,6 +22,6 @@ public final class Autonomous2BP extends LinearOpMode {
         Robot.deliver1stBlock();
         Robot.collect2ndBlock();
         Robot.deliver2ndBlock();
-        Robot.movePlatformMacro();
+        Robot.movePlatform();
     }
 }

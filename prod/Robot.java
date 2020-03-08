@@ -1,7 +1,5 @@
 package quasar.prod;
 
-import android.sax.StartElementListener;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -14,13 +12,14 @@ import quasar.subsystems.sensory.IMUHandler;
 import quasar.subsystems.sensory.TFSkystoneDetector;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.CM;
+import static quasar.prod.Side.RED;
 import static quasar.subsystems.Mecanum.STRAFE_COEF;
 
 public final class Robot {
-    static Side s = Side.RED;
-    static BlockPosition pb = BlockPosition.CENTER;
+    private static Side s = RED;
+    private static BlockPosition pb = BlockPosition.CENTER;
 
-    static PartialMacroPlayer deliver, platRed, platBlue; //We have to lateinit these because lop isn't set
+    private static PartialMacroPlayer deliver, platRed, platBlue; //We have to lateinit these because lop isn't set yet
 
     private static DistanceSensor distF, distL, distR;
 
@@ -35,8 +34,8 @@ public final class Robot {
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
     //endregion
 
-    private static int B_DISTL = -190, B_DISTC = 240, B_DISTR = 500, B_DIST;
-    private static double W_DISTL = 37, W_DISTC = 55, W_DISTR = 75, W_DIST;
+    private static int B_DIST, B_DIFF;
+    private static double W_DIST;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -66,6 +65,8 @@ public final class Robot {
     }
 
     static void autoInit() {
+        chooseSide();
+
         say("IMU Initializing");
         imu.autoInit();
 
@@ -98,10 +99,12 @@ public final class Robot {
         say("Sensors initializing");
         distF = lop.hardwareMap.get(DistanceSensor.class, "distance");
         distL = lop.hardwareMap.get(DistanceSensor.class, "distanceL");
+        distR = lop.hardwareMap.get(DistanceSensor.class, "distanceR");
 
         say(
                 "Robot initialized :D\n"
-                + "(Remember: is a wire blocking a distance sensor?)"
+                + "(Remember: is a wire blocking a distance sensor?)\n"
+                + "Side: " + s
         );
     }
     public static void init() {
@@ -139,6 +142,18 @@ public final class Robot {
         pm.stop();
         cp.stop();
     }
+
+    private static void chooseSide() {
+        boolean prevX = true;
+        while(!lop.isStopRequested() && (!lop.gamepad1.a || lop.gamepad1.start)) {
+            if(lop.gamepad1.x && !prevX) s = s.swap();
+            prevX = lop.gamepad1.x;
+
+            lop.telemetry.addLine("Choose side.  Press [A] to finalize choice, and [X] to switch");
+            lop.telemetry.addData("Current Side", s);
+            lop.telemetry.update();
+        }
+    }
     //endregion
     private static void say(Object o) {
         opm.telemetry.addLine(""+o);
@@ -164,7 +179,7 @@ public final class Robot {
     //endregion
 
     //region Autonomous
-    static void fwdTicks(int ticks, double targetHeading, double pwr) {
+    private static void fwdTicks(int ticks, double targetHeading, double pwr) {
         int start = me.getFwdPos();
         int end = start + ticks;
         final int NEAR_EN = 400;
@@ -189,7 +204,7 @@ public final class Robot {
     static void fwdTicks(int ticks, double targetHeading) {
         fwdTicks(ticks, targetHeading, 0.8);
     }
-    static void strafeTicks(int ticks, double targetHeading, double pwr) {
+    private static void strafeTicks(int ticks, double targetHeading, double pwr) {
         int start = me.getStrPos();
         int end = start + ticks;
         final int END_DIFF = 100;
@@ -202,11 +217,12 @@ public final class Robot {
 
         me.setPowers(0,0,0);
     }
-    static void strafeTicks(int ticks, double targetHeading) {
+    private static void strafeTicks(int ticks, double targetHeading) {
         strafeTicks(ticks, targetHeading, 0.7);
     }
 
     private static void turnDegAbsolute(double target) {
+        target *= s.c();
         me.setPowers(0,0,-Math.signum(target) * 0.5 / 3);
 
         double start = imu.getAbsoluteHeading();
@@ -232,6 +248,24 @@ public final class Robot {
         li.openClaw();
     }
     static void getPosition() {
+        if(s == RED) getPositionRed();
+        else getPositionBlue();
+
+        if(pb == BlockPosition.LEFT) {
+            B_DIST = s == RED? -190 : -500;
+            W_DIST = 35;
+        } else if (pb == BlockPosition.CENTER) {
+            B_DIST = s == RED? 240: -200;
+            W_DIST = 55;
+        } else {
+            B_DIST = s == RED? 500: 200;
+            W_DIST = 75;
+        }
+
+        if(s == RED) B_DIFF = B_DIST;
+        else         B_DIFF = -B_DIST;
+    }
+    private static void getPositionRed() {
         long et = System.currentTimeMillis() + 800;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
@@ -252,18 +286,28 @@ public final class Robot {
         if(l > c && l > r) pb = BlockPosition.LEFT;
         else if(c > l && c > r) pb = BlockPosition.CENTER;
         else pb = BlockPosition.RIGHT;
+    }
+    private static void getPositionBlue() {
+        long et = System.currentTimeMillis() + 800;
+        int l = 0, c = 0, r = 0;
+        while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
+            tfs.loop();
 
-        if(pb == BlockPosition.LEFT) {
-            B_DIST = B_DISTL;
-            W_DIST = W_DISTL;
-        } else if (pb == BlockPosition.CENTER) {
-            B_DIST = B_DISTC;
-            W_DIST = W_DISTC;
-        } else {
-            B_DIST = B_DISTR;
-            W_DIST = W_DISTR;
+            double pos = tfs.getX();
+            if (pos < 150 && tfs.isSkystoneIsVisible()) l ++;
+            else if(tfs.isSkystoneIsVisible()) c ++;
+            else r ++;
+
+            lop.telemetry.addData("L", l);
+            lop.telemetry.addData("C", c);
+            lop.telemetry.addData("R", r);
+            lop.telemetry.addData("pos", pos);
+            lop.telemetry.addData("Visible", tfs.isSkystoneIsVisible());
+            lop.telemetry.update();
         }
-
+        if(l > c && l > r) pb = BlockPosition.LEFT;
+        else if(c > l && c > r) pb = BlockPosition.CENTER;
+        else pb = BlockPosition.RIGHT;
     }
 
     static void collect1stBlock() {
@@ -280,70 +324,45 @@ public final class Robot {
     static void deliver1stBlock() {
         turnDegAbsolute(90);
         goToCorrectWallDistance();
-        fwdTicks(-2750 + B_DIST,90);
-        me.turnDegrees(90);
+        fwdTicks(-2750 + B_DIFF,90);
+        turnDegAbsolute(150);
         deliver.playMacro();
         turnDegAbsolute(90);
     }
     static void collect2ndBlock() {
         li.openClaw();
-        fwdTicks(3320 - B_DIST, 90);
+        fwdTicks(3320 - B_DIFF, 90);
         fwdToWall();
         co.open();
         co.collect();
-        strafeTicks(900, 90);
+        strafeTicks(900 * s.c(), 90);
         fwdTicks(300,90,0.7);
-        strafeTicks(-900,90);
+        strafeTicks(-900 * s.c(),90);
         goToCorrectWallDistance();
         co.half();
         co.zero();
         li.closeClaw();
     }
     static void deliver2ndBlock() {
-        fwdTicks(-4200 + B_DIST, 90);
-        me.turnDegrees(90);
+        fwdTicks(-4200 + B_DIFF, 90);
+        if(s == RED) me.turnDegrees(90);
+        else         me.turnDegrees(-90);
         platRed.playMacro();
     }
     static void movePlatform() {
-        pm.raiseHooks();
-        me.setPowers(-0.4,0,0);
-        lop.sleep(500);
-        pm.lowerHooks();
-        lop.sleep(500);
-
-        me.setPowers(0.6,0,0);
-
-        final double target = 5;
-        final double P = -0.01;
-        double diff;
-
-        do {
-            diff = target - distF.getDistance(CM);
-
-            double pow = P * diff;
-            pow = Math.signum(pow) * MoreMath.clip(Math.abs(pow), 0.2, 0.5);
-
-            me.setPowers(pow, 0,0); //Our IMU turn functions kinda break down at 180±5...
-        } while (Math.abs(diff) > 10);
-    }
-    static void movePlatformMacro() {
-        pm.raiseHooks();
-        me.setPowers(-0.4,0,0);
-        lop.sleep(500);
-        pm.lowerHooks();
-        lop.sleep(500);
-
-        platRed.playMacro();
+        if(s == RED) platRed.playMacro();
+        else platBlue.playMacro();
     }
 
-    static void fwdToWall() {
+    private static void fwdToWall() {
         final double targetF = W_DIST, targetS = 50;
         final double Pf = -0.005, Ps = 0.01;
 
         double diffF, diffS;
         do {
             diffF = targetF - distF.getDistance(CM);
-            diffS = targetS - distL.getDistance(CM);
+            if(s == RED) diffS = targetS - distL.getDistance(CM);
+            else         diffS = -(targetS - distR.getDistance(CM));
 
             double powF = Pf * diffF;
             double powS = Ps * diffS;
@@ -361,12 +380,13 @@ public final class Robot {
 
         me.setPowers(0,0,0);
     }
-    static void goToCorrectWallDistance() {
+    private static void goToCorrectWallDistance() {
         final double target = 55;
         final double P = 0.01;
         double diff;
         do {
-            diff = target - distL.getDistance(CM);
+            if(s == RED) diff = target - distL.getDistance(CM);
+            else         diff = -(target - distR.getDistance(CM));
 
             double pow = P * diff;
             pow = Math.signum(pow) * MoreMath.clip(Math.abs(pow), 0.2, 0.8);
@@ -378,7 +398,7 @@ public final class Robot {
     }
 
     private static double turnForStableAngle(double targetHeading) {
-        double diff = targetHeading - imu.getAbsoluteHeading();
+        double diff = targetHeading * s.c() - imu.getAbsoluteHeading();
         final double P = 0.018;
         return MoreMath.clip( -diff * P, -.5, .5 );
     }

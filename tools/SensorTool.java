@@ -21,13 +21,14 @@ public final class SensorTool extends OpMode {
     public void init() {
         dist = hardwareMap.get(DistanceSensor.class, "distance");
         distL = hardwareMap.get(DistanceSensor.class, "distanceL");
+        distR = hardwareMap.get(DistanceSensor.class, "distanceR");
     }
 
     @Override
     public void loop() {
-        //Left = 30cm, Center = 50cm, Right = 70cm
         telemetry.addData("Front", dist.getDistance(CM));
         telemetry.addData("Left", distL.getDistance(CM));
+        telemetry.addData("Right", distR.getDistance(CM));
         telemetry.update();
     }
 }

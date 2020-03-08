@@ -26,7 +26,7 @@ public enum Side {
      * @return 1 if red, -1 if blue.
      */
     @Contract(pure = true)
-    public double c() {
+    public int c() {
         if(this == RED) return 1;
         else return -1;
     }
