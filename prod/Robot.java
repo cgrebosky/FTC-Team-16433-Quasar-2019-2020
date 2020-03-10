@@ -19,7 +19,7 @@ public final class Robot {
     private static Side s = RED;
     private static BlockPosition pb = BlockPosition.CENTER;
 
-    private static PartialMacroPlayer deliver, platRed, platBlue; //We have to lateinit these because lop isn't set yet
+    private static PartialMacroPlayer deliver, platform; //We have to lateinit these because lop isn't set yet
 
     private static DistanceSensor distF, distL, distR;
 
@@ -34,8 +34,9 @@ public final class Robot {
     private static TFSkystoneDetector tfs = new TFSkystoneDetector();
     //endregion
 
-    private static int B_DIST, B_DIFF;
+    private static int B_DIST;
     private static double W_DIST;
+    private static double SIDE_WALL_DIST = 63;
 
     //region Internal Stuff
     private static LinearOpMode lop = null;
@@ -91,10 +92,8 @@ public final class Robot {
         say("Macro Initializing");
         deliver  = new PartialMacroPlayer(lop, "AUTO Deliver Block");
         deliver.init();
-        platRed = new PartialMacroPlayer(lop, "AUTO Platform RED");
-        platRed.init();
-        platBlue = new PartialMacroPlayer(lop, "AUTO Platform BLUE");
-        platBlue.init();
+        platform = new PartialMacroPlayer(lop, "AUTO Move Platform");
+        platform.init();
 
         say("Sensors initializing");
         distF = lop.hardwareMap.get(DistanceSensor.class, "distance");
@@ -252,21 +251,18 @@ public final class Robot {
         else getPositionBlue();
 
         if(pb == BlockPosition.LEFT) {
-            B_DIST = s == RED? -190 : -500;
+            B_DIST = s == RED? -190 : 250;
             W_DIST = 35;
         } else if (pb == BlockPosition.CENTER) {
             B_DIST = s == RED? 240: -200;
             W_DIST = 55;
         } else {
-            B_DIST = s == RED? 500: 200;
+            B_DIST = s == RED? 500: -500;
             W_DIST = 75;
         }
-
-        if(s == RED) B_DIFF = B_DIST;
-        else         B_DIFF = -B_DIST;
     }
     private static void getPositionRed() {
-        long et = System.currentTimeMillis() + 800;
+        long et = System.currentTimeMillis() + 1000;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             tfs.loop();
@@ -288,15 +284,15 @@ public final class Robot {
         else pb = BlockPosition.RIGHT;
     }
     private static void getPositionBlue() {
-        long et = System.currentTimeMillis() + 800;
+        long et = System.currentTimeMillis() + 1000;
         int l = 0, c = 0, r = 0;
         while(lop.opModeIsActive() && System.currentTimeMillis() < et) {
             tfs.loop();
 
             double pos = tfs.getX();
-            if (pos < 150 && tfs.isSkystoneIsVisible()) l ++;
+            if (pos < 150 && tfs.isSkystoneIsVisible()) r ++;
             else if(tfs.isSkystoneIsVisible()) c ++;
-            else r ++;
+            else l ++;
 
             lop.telemetry.addData("L", l);
             lop.telemetry.addData("C", c);
@@ -316,7 +312,7 @@ public final class Robot {
         strafeTicks((int) (B_DIST * STRAFE_COEF), 0);
         co.collect();
         fwdTicks(1700, 0, 0.5);
-        fwdTicks(-1000, 0,0.7);
+        fwdTicks(-900, 0,0.7);
         co.stop();
         co.half();
         li.closeClaw();
@@ -324,14 +320,14 @@ public final class Robot {
     static void deliver1stBlock() {
         turnDegAbsolute(90);
         goToCorrectWallDistance();
-        fwdTicks(-2750 + B_DIFF,90);
+        fwdTicks(-2750 + B_DIST,90);
         turnDegAbsolute(150);
         deliver.playMacro();
         turnDegAbsolute(90);
     }
     static void collect2ndBlock() {
         li.openClaw();
-        fwdTicks(3320 - B_DIFF, 90);
+        fwdTicks(3320 - B_DIST, 90);
         fwdToWall();
         co.open();
         co.collect();
@@ -344,18 +340,16 @@ public final class Robot {
         li.closeClaw();
     }
     static void deliver2ndBlock() {
-        fwdTicks(-4200 + B_DIFF, 90);
+        fwdTicks(-4200 + B_DIST, 90);
         if(s == RED) me.turnDegrees(90);
         else         me.turnDegrees(-90);
-        platRed.playMacro();
     }
     static void movePlatform() {
-        if(s == RED) platRed.playMacro();
-        else platBlue.playMacro();
+        platform.playMacro();
     }
 
     private static void fwdToWall() {
-        final double targetF = W_DIST, targetS = 50;
+        final double targetF = W_DIST, targetS = SIDE_WALL_DIST;
         final double Pf = -0.005, Ps = 0.01;
 
         double diffF, diffS;
@@ -381,7 +375,7 @@ public final class Robot {
         me.setPowers(0,0,0);
     }
     private static void goToCorrectWallDistance() {
-        final double target = 55;
+        final double target = SIDE_WALL_DIST;
         final double P = 0.01;
         double diff;
         do {
